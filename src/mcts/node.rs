@@ -23,7 +23,7 @@ impl From<GameState> for Node {
 }
 
 impl Node {
-    const C: f32 = 1.41;
+    const C: f32 = 2.0;
 
     pub fn new(state: GameState, parent: i32) -> Self {
         Node {
@@ -43,12 +43,12 @@ impl Node {
         self.state
     }
 
-    pub fn actions(&self) -> &Vec<Edge> {
-        &self.actions
+    pub fn mut_edge(&mut self, index: usize) -> &mut Edge {
+        &mut self.actions[index]
     }
 
-    pub fn action(&mut self, index: usize) -> &mut Edge {
-        &mut self.actions[index]
+    pub fn actions(&self) -> &Vec<Edge> {
+        &self.actions
     }
 
     pub fn visits(&self) -> f32 {
@@ -60,40 +60,23 @@ impl Node {
     }
 
     pub fn uct(&self, n: f32) -> f32 {
-        if self.visits == 0.0 {
-            return 0.0;
-        }
-
-        (self.wins / self.visits) + Node::C * (n.ln() / self.visits).sqrt()
+        (-self.wins / self.visits) + (Node::C * n.ln() / self.visits).sqrt()
     }
 
     pub fn expand<G: Game>(&mut self, pos: &G) {
-        assert!(!self.is_expanded());
+        assert!(self.is_not_expanded());
 
-        let moves = pos.get_moves();
-        for i in 0..moves.len() {
-            self.actions.push(Edge::new(moves[i].into()));
+        for mov in pos.get_moves() {
+            self.actions.push(Edge::new(mov.into()));
         }
     }
 
-    pub fn is_expanded(&self) -> bool {
-        !self.actions.is_empty()
+    pub fn is_not_expanded(&self) -> bool {
+        self.actions.is_empty()
     }
 
     pub fn is_terminal(&self) -> bool {
         self.state != GameState::Ongoing
-    }
-
-    pub fn next_edge(&mut self) -> Option<&mut Edge> {
-        assert!(self.is_expanded());
-
-        for edge in &mut self.actions {
-            if edge.ptr() == -1 {
-                return Some(edge);
-            }
-        }
-
-        None
     }
 
     pub fn propagate(&mut self, reward: f32) {

@@ -1,11 +1,30 @@
-use mentor::{mcts::Search, TicTacToe};
+use mentor::{mcts::Search, Game, GameState, TicTacToe};
 
 fn main() {
-    let game = TicTacToe {
+    let mut game = TicTacToe {
         turn: 0,
         grid: [0b_000_000_000, 0b_000_000_000],
     };
 
-    let mut search = Search::new(game);
-    println!("{}", search.run());
+    while game.game_state() == GameState::Ongoing {
+        let mut search = Search::new(game);
+
+        let mov = match game.turn {
+            0 | 1 => search.run(),
+            _ => {
+                let mut input_line = String::new();
+                std::io::stdin()
+                    .read_line(&mut input_line)
+                    .expect("Failed to read line");
+
+                input_line
+                    .trim()
+                    .parse::<u16>()
+                    .expect("Input not an integer")
+                    .into()
+            }
+        };
+
+        game.make_move(mov);
+    }
 }
