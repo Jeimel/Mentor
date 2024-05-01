@@ -1,4 +1,7 @@
-use mentor::{mcts::Search, Game, GameState, TicTacToe};
+use mentor::{
+    games::{tictactoe::TicTacToe, Game, GameState},
+    mcts::Search,
+};
 
 fn main() {
     let mut game = TicTacToe {

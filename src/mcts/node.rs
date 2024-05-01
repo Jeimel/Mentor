@@ -1,5 +1,6 @@
+use crate::games::{Game, GameState};
+
 use super::edge::Edge;
-use crate::{Game, GameState};
 
 #[derive(Clone)]
 pub struct Node {

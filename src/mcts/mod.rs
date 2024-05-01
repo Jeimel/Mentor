@@ -2,9 +2,9 @@ pub mod edge;
 pub mod node;
 pub mod tree;
 
-use crate::{mcts::tree::Tree, Game, GameState};
+use crate::games::{Game, GameState};
 
-use self::node::Node;
+use self::{node::Node, tree::Tree};
 
 pub struct Search<G: Game> {
     root: G,

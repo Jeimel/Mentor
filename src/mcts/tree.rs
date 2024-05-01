@@ -1,5 +1,6 @@
+use crate::games::GameState;
+
 use super::node::Node;
-use crate::GameState;
 use std::ops::{Index, IndexMut};
 
 pub struct Tree {
