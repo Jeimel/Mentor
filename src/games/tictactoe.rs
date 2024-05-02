@@ -2,7 +2,7 @@ use super::{Game, GameState};
 
 #[derive(Clone, Copy, Default)]
 pub struct TicTacToe {
-    pub turn: usize,
+    pub side_to_move: usize,
     pub grid: [u16; 2],
 }
 
@@ -55,6 +55,10 @@ impl TicTacToe {
 impl Game for TicTacToe {
     type Move = TicTacToeMove;
 
+    fn side_to_move(&self) -> usize {
+        self.side_to_move
+    }
+
     fn game_state(&self) -> GameState {
         let bitboards = [
             0b111_000_000,
@@ -68,11 +72,11 @@ impl Game for TicTacToe {
         ];
 
         for bitboard in bitboards {
-            if (self.grid[(self.turn + 1) % 2] & bitboard).count_ones() == 3 {
+            if (self.grid[(self.side_to_move + 1) % 2] & bitboard).count_ones() == 3 {
                 return GameState::Loss;
             }
 
-            if (self.grid[self.turn] & bitboard).count_ones() == 3 {
+            if (self.grid[self.side_to_move] & bitboard).count_ones() == 3 {
                 return GameState::Win;
             }
         }
@@ -89,8 +93,8 @@ impl Game for TicTacToe {
             panic!();
         }
 
-        self.grid[self.turn] |= mov.0;
-        self.turn = (self.turn + 1) % 2;
+        self.grid[self.side_to_move] |= mov.0;
+        self.side_to_move = (self.side_to_move + 1) % 2;
     }
 
     fn get_moves(&self) -> Vec<Self::Move> {

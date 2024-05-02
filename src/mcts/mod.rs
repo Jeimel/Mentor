@@ -96,25 +96,19 @@ impl<G: Game> Search<G> {
     }
 
     pub fn simulate(pos: &mut G) -> f32 {
-        let mut reward = 0.0;
+        let side_to_move = pos.side_to_move();
 
         while pos.game_state() == GameState::Ongoing {
             let moves = pos.get_moves();
             let index = (rand::random::<f32>() * moves.len() as f32).floor() as usize;
 
             pos.make_move(moves[index]);
-
-            reward = 1.0 - reward;
         }
 
-        if pos.game_state() == GameState::Draw {
-            return 0.0;
+        match pos.game_state() {
+            GameState::Draw => 0.0,
+            _ if side_to_move == pos.side_to_move() => -1.0,
+            _ => 1.0,
         }
-
-        if reward == 0.0 {
-            return -1.0;
-        }
-
-        reward
     }
 }
