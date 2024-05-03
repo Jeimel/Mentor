@@ -1,7 +1,11 @@
-use crate::games::GameState;
+pub mod edge;
+pub mod node;
 
-use super::node::Node;
+use crate::GameState;
+
 use std::ops::{Index, IndexMut};
+
+use self::node::Node;
 
 pub struct Tree {
     nodes: Vec<Node>,

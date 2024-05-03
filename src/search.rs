@@ -1,10 +1,7 @@
-pub mod edge;
-pub mod node;
-pub mod tree;
-
-use crate::games::{Game, GameState};
-
-use self::{node::Node, tree::Tree};
+use crate::{
+    tree::{node::Node, Tree},
+    Game, GameState,
+};
 
 pub struct Search<G: Game> {
     root: G,

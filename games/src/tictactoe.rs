@@ -1,4 +1,4 @@
-use super::{Game, GameState};
+use mentor::{Game, GameState};
 
 #[derive(Clone, Copy, Default)]
 pub struct TicTacToe {

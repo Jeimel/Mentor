@@ -1,7 +1,8 @@
-use mentor::{
-    games::{tictactoe::TicTacToe, Game, GameState},
-    mcts::Search,
-};
+pub mod tictactoe;
+
+use mentor::{search::Search, Game, GameState};
+
+use crate::tictactoe::TicTacToe;
 
 fn main() {
     let mut game = TicTacToe {
@@ -30,4 +31,6 @@ fn main() {
 
         game.make_move(mov);
     }
+
+    println!("{:?}", game.game_state());
 }

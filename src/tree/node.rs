@@ -1,4 +1,4 @@
-use crate::games::{Game, GameState};
+use crate::{Game, GameState};
 
 use super::edge::Edge;
 
