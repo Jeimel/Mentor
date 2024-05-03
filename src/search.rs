@@ -1,7 +1,14 @@
+use std::time::Instant;
+
 use crate::{
     tree::{node::Node, Tree},
     Game,
 };
+
+pub struct SearchSettings {
+    pub max_time: Option<u128>,
+    pub max_nodes: usize,
+}
 
 pub struct Search<G: Game> {
     root: G,
@@ -9,24 +16,44 @@ pub struct Search<G: Game> {
 }
 
 impl<G: Game> Search<G> {
-    pub fn new(position: G) -> Self {
+    pub fn new(pos: G) -> Self {
         Search {
-            root: position,
-            tree: Tree::new(position.game_state()),
+            root: pos,
+            tree: Tree::new(),
         }
     }
 
-    pub fn run(&mut self) -> G::Move {
-        for _ in 0..5_000 {
-            self.execute_iteration(0, &mut self.root.clone());
+    pub fn run(&mut self, pos: Option<G>, setings: SearchSettings) -> G::Move {
+        let timer = Instant::now();
+
+        self.tree.subtree::<G>(&self.root, &pos);
+        if let Some(pos) = pos {
+            self.root = pos;
         }
 
-        self.tree[0]
+        let mut nodes = 0;
+        loop {
+            let mut root = self.root;
+
+            self.execute_iteration(self.tree.root(), &mut root);
+
+            nodes += 1;
+            if nodes >= setings.max_nodes {
+                break;
+            }
+
+            match setings.max_time {
+                Some(time) if timer.elapsed().as_millis() >= time => break,
+                _ => continue,
+            };
+        }
+
+        self.tree[self.tree.root()]
             .actions()
             .iter()
             .map(|edge| {
                 println!(
-                    "{} Score {} Wins {} Visits {}",
+                    "Move {} Score {} Wins {} Visits {}",
                     edge.mov(),
                     -self.tree[edge.ptr()].wins() / self.tree[edge.ptr()].visits(),
                     self.tree[edge.ptr()].wins(),
@@ -79,10 +106,8 @@ impl<G: Game> Search<G> {
         pos.make_move(mov.into());
 
         if new_index == -1 {
-            new_index = self.tree.len();
-
             let node = Node::new(pos.game_state(), index);
-            self.tree.add(node);
+            new_index = self.tree.add(node);
             self.tree[index].mut_edge(edge).set_ptr(new_index);
         }
 

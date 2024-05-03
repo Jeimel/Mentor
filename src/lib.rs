@@ -13,6 +13,8 @@ pub enum GameState {
 pub trait Game: Clone + Copy + Default {
     type Move: std::fmt::Display + From<u16> + Into<u16> + Copy;
 
+    fn equals(&self, other: &Self) -> bool;
+
     fn side_to_move(&self) -> usize;
 
     fn game_state(&self) -> GameState;

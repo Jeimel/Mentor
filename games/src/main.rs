@@ -1,6 +1,9 @@
 pub mod tictactoe;
 
-use mentor::{search::Search, Game, GameState};
+use mentor::{
+    search::{Search, SearchSettings},
+    Game, GameState,
+};
 
 use crate::tictactoe::TicTacToe;
 
@@ -10,11 +13,15 @@ fn main() {
         grid: [0b_000_000_000, 0b_000_000_000],
     };
 
+    let mut search = Search::new(game);
     while game.game_state() == GameState::Ongoing {
-        let mut search = Search::new(game);
+        let settings = SearchSettings {
+            max_time: Some(1000),
+            max_nodes: 80_000,
+        };
 
-        let mov = match game.side_to_move {
-            0 | 1 => search.run(),
+        let mov: tictactoe::TicTacToeMove = match game.side_to_move {
+            0 | 1 => search.run(Some(game), settings),
             _ => {
                 let mut input_line = String::new();
                 std::io::stdin()
@@ -30,6 +37,7 @@ fn main() {
         };
 
         game.make_move(mov);
+        game.print();
     }
 
     println!("{:?}", game.game_state());

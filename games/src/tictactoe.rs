@@ -55,6 +55,10 @@ impl TicTacToe {
 impl Game for TicTacToe {
     type Move = TicTacToeMove;
 
+    fn equals(&self, other: &Self) -> bool {
+        self.grid[0] == other.grid[0] && self.grid[1] == other.grid[1]
+    }
+
     fn side_to_move(&self) -> usize {
         self.side_to_move
     }
