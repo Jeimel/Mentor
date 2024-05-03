@@ -1,7 +1,7 @@
 use rand::{rngs::ThreadRng, thread_rng};
 use rand_distr::{Distribution, Normal, Uniform};
 
-use crate::network::layer::activation::Activation;
+use crate::layer::activation::Activation;
 
 #[derive(Copy, Clone)]
 pub struct Vector<const N: usize> {

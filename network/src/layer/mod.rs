@@ -66,7 +66,7 @@ pub mod activation {
 }
 
 pub mod cost {
-    use crate::network::collections::vector::Vector;
+    use crate::collections::vector::Vector;
 
     pub struct MeanSquareError;
 

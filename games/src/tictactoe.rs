@@ -88,6 +88,25 @@ impl Game for TicTacToe {
         GameState::Ongoing
     }
 
+    fn get_value(&mut self) -> f32 {
+        let mut pos = self.clone();
+
+        let side_to_move = pos.side_to_move();
+
+        while pos.game_state() == GameState::Ongoing {
+            let moves = pos.get_moves();
+            let index = (rand::random::<f32>() * moves.len() as f32).floor() as usize;
+
+            pos.make_move(moves[index]);
+        }
+
+        match pos.game_state() {
+            GameState::Draw => 0.0,
+            _ if side_to_move == pos.side_to_move() => -1.0,
+            _ => 1.0,
+        }
+    }
+
     fn make_move(&mut self, mov: Self::Move) {
         if self.game_state() != GameState::Ongoing {
             panic!();

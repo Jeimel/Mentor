@@ -17,6 +17,8 @@ pub trait Game: Clone + Copy + Default {
 
     fn game_state(&self) -> GameState;
 
+    fn get_value(&mut self) -> f32;
+
     fn make_move(&mut self, mov: Self::Move);
 
     fn get_moves(&self) -> Vec<Self::Move>;

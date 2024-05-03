@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::network::collections::{matrix::Matrix, vector::Vector};
+use crate::collections::{matrix::Matrix, vector::Vector};
 
 use super::{activation::Activation, FeedForwardLayer};
 
@@ -76,7 +76,7 @@ impl<T: Activation, const M: usize, const N: usize> DenseLayer<T, M, N> {
 
 #[cfg(test)]
 mod tests {
-    use crate::network::{
+    use crate::{
         collections::{matrix::Matrix, vector::Vector},
         layer::{activation::ReLu, FeedForwardLayer},
     };

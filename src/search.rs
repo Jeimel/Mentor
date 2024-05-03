@@ -1,6 +1,6 @@
 use crate::{
     tree::{node::Node, Tree},
-    Game, GameState,
+    Game,
 };
 
 pub struct Search<G: Game> {
@@ -46,7 +46,7 @@ impl<G: Game> Search<G> {
 
     pub fn execute_iteration(&mut self, index: i32, pos: &mut G) -> f32 {
         if self.tree[index].visits() == 0.0 {
-            let reward = Search::simulate(pos);
+            let reward = pos.get_value();
             self.tree[index].propagate(reward);
 
             return reward;
@@ -90,22 +90,5 @@ impl<G: Game> Search<G> {
         self.tree[index].propagate(reward);
 
         reward
-    }
-
-    pub fn simulate(pos: &mut G) -> f32 {
-        let side_to_move = pos.side_to_move();
-
-        while pos.game_state() == GameState::Ongoing {
-            let moves = pos.get_moves();
-            let index = (rand::random::<f32>() * moves.len() as f32).floor() as usize;
-
-            pos.make_move(moves[index]);
-        }
-
-        match pos.game_state() {
-            GameState::Draw => 0.0,
-            _ if side_to_move == pos.side_to_move() => -1.0,
-            _ => 1.0,
-        }
     }
 }
