@@ -48,6 +48,8 @@ impl<G: Game> Search<G> {
             };
         }
 
+        println!("{}", self.tree.len());
+
         self.tree[self.tree.root()]
             .actions()
             .iter()

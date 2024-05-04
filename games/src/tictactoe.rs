@@ -26,7 +26,7 @@ impl From<TicTacToeMove> for u16 {
         value.0
     }
 }
-
+#[allow(dead_code)]
 impl TicTacToe {
     pub fn print(&self) {
         let mut grid = vec!["_"; 9];
@@ -93,7 +93,7 @@ impl Game for TicTacToe {
     }
 
     fn get_value(&mut self) -> f32 {
-        let mut pos = self.clone();
+        let mut pos = *self;
 
         let side_to_move = pos.side_to_move();
 
