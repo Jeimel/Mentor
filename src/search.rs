@@ -16,10 +16,10 @@ pub struct Search<G: Game> {
 }
 
 impl<G: Game> Search<G> {
-    pub fn new(pos: G) -> Self {
+    pub fn new(pos: G, capacity: usize) -> Self {
         Search {
             root: pos,
-            tree: Tree::new(),
+            tree: Tree::new(capacity),
         }
     }
 
@@ -81,12 +81,12 @@ impl<G: Game> Search<G> {
             return reward;
         }
 
-        if self.tree[index].is_not_expanded() {
-            self.tree[index].expand(pos);
-        }
-
         if self.tree[index].is_terminal() {
             return self.tree[index].wins() / self.tree[index].visits();
+        }
+
+        if self.tree[index].is_not_expanded() {
+            self.tree[index].expand(pos);
         }
 
         let n = self.tree[index].visits();
@@ -99,7 +99,7 @@ impl<G: Game> Search<G> {
                     return (index, f32::INFINITY, -1, edge.mov());
                 }
 
-                (index, self.tree[edge.ptr()].uct(n), edge.ptr(), edge.mov())
+                (index, self.tree.uct(edge.ptr(), n), edge.ptr(), edge.mov())
             })
             .max_by(|(_, a, _, _), (_, b, _, _)| a.total_cmp(b))
             .map(|(edge, _, index, mov)| (edge, index, mov))
@@ -108,13 +108,13 @@ impl<G: Game> Search<G> {
         pos.make_move(mov.into());
 
         if new_index == -1 {
-            let node = Node::new(pos.game_state(), index);
+            let node = Node::new(pos.game_state(), pos.hash(), index);
             new_index = self.tree.add(node);
             self.tree[index].mut_edge(edge).set_ptr(new_index);
         }
 
         let reward = -self.execute_iteration(new_index, pos);
-        self.tree[index].propagate(reward);
+        self.tree.propagate(index, reward);
 
         reward
     }

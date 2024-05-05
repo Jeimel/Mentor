@@ -19,6 +19,8 @@ pub trait Game: Clone + Copy + Default {
 
     fn game_state(&self) -> GameState;
 
+    fn hash(&self) -> u64;
+
     fn get_value(&mut self) -> f32;
 
     fn make_move(&mut self, mov: Self::Move);

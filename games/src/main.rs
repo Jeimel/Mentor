@@ -15,11 +15,11 @@ fn main() {
         mask: 0,
     };
 
-    let mut search = Search::new(game);
+    let mut search = Search::new(game, 50_000);
     while game.game_state() == GameState::Ongoing {
         let settings = SearchSettings {
             max_time: Some(2500),
-            max_nodes: 80_000,
+            max_nodes: usize::MAX,
         };
 
         let mov = match game.side_to_move {

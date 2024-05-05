@@ -23,8 +23,8 @@ impl From<u16> for Connect4Move {
 }
 
 impl From<Connect4Move> for u16 {
-    fn from(value: Connect4Move) -> Self {
-        value.0
+    fn from(mov: Connect4Move) -> Self {
+        mov.0
     }
 }
 
@@ -55,6 +55,10 @@ impl Game for Connect4 {
         }
 
         GameState::Ongoing
+    }
+
+    fn hash(&self) -> u64 {
+        self.current + self.mask
     }
 
     fn get_value(&mut self) -> f32 {

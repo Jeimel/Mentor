@@ -1,35 +1,22 @@
-use crate::{Game, GameState};
-
 use super::edge::Edge;
+use crate::{Game, GameState};
 
 #[derive(Clone)]
 pub struct Node {
     parent: i32,
     state: GameState,
+    hash: u64,
     actions: Vec<Edge>,
     wins: f32,
     visits: f32,
 }
 
-impl From<GameState> for Node {
-    fn from(state: GameState) -> Self {
-        Node {
-            parent: -1,
-            state,
-            actions: Vec::new(),
-            wins: 0.0,
-            visits: 0.0,
-        }
-    }
-}
-
 impl Node {
-    const C: f32 = 2.0;
-
-    pub fn new(state: GameState, parent: i32) -> Self {
+    pub fn new(state: GameState, hash: u64, parent: i32) -> Self {
         Node {
             parent,
             state,
+            hash,
             actions: Vec::new(),
             wins: 0.0,
             visits: 0.0,
@@ -42,6 +29,10 @@ impl Node {
 
     pub fn game_state(&self) -> GameState {
         self.state
+    }
+
+    pub fn hash(&self) -> u64 {
+        self.hash
     }
 
     pub fn mut_edge(&mut self, index: usize) -> &mut Edge {
@@ -58,10 +49,6 @@ impl Node {
 
     pub fn wins(&self) -> f32 {
         self.wins
-    }
-
-    pub fn uct(&self, n: f32) -> f32 {
-        (-self.wins / self.visits) + (Node::C * n.ln() / self.visits).sqrt()
     }
 
     pub fn expand<G: Game>(&mut self, pos: &G) {

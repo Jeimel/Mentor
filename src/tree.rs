@@ -1,15 +1,15 @@
 pub mod edge;
+pub mod hash;
 pub mod node;
 
+use self::{hash::HashTable, node::Node};
 use crate::{Game, GameState};
-
 use std::ops::{Index, IndexMut};
-
-use self::node::Node;
 
 pub struct Tree {
     root: i32,
     nodes: Vec<Node>,
+    table: HashTable,
 }
 
 impl Index<i32> for Tree {
@@ -27,15 +27,22 @@ impl IndexMut<i32> for Tree {
 }
 
 impl Tree {
-    pub fn new() -> Self {
+    const C: f32 = 2.0;
+
+    pub fn new(capacity: usize) -> Self {
         Tree {
             root: -1,
             nodes: vec![],
+            table: HashTable::new(capacity),
         }
     }
 
     pub fn root(&self) -> i32 {
         self.root
+    }
+
+    pub fn set_root(&mut self, root: i32) {
+        self.root = root;
     }
 
     pub fn add(&mut self, node: Node) -> i32 {
@@ -51,14 +58,14 @@ impl Tree {
 
     pub fn subtree<G: Game>(&mut self, root: &G, pos: &Option<G>) {
         if self.is_empty() {
-            self.reset();
+            self.reset(root);
             return;
         }
 
         if let Some(pos) = pos {
             let node = self.find(self.root, root, pos, 2);
             if node == -1 {
-                self.reset();
+                self.reset(pos);
                 return;
             }
 
@@ -66,15 +73,28 @@ impl Tree {
         }
     }
 
-    pub fn reset(&mut self) {
-        self.clear();
+    pub fn uct(&self, index: i32, n: f32) -> f32 {
+        let (visits, wins) = if let Some(entry) = self.table.get(self[index].hash()) {
+            (entry.visits, entry.wins)
+        } else {
+            (self[index].visits(), self[index].wins())
+        };
 
-        let node = self.add(Node::new(GameState::Ongoing, -1));
-        self.set_root(node);
+        (-wins / visits) + (Tree::C * n.ln() / self[index].visits()).sqrt()
     }
 
-    pub fn clear(&mut self) {
+    pub fn propagate(&mut self, index: i32, reward: f32) {
+        self[index].propagate(reward);
+
+        let node = &self[index];
+        self.table.insert(node.hash(), node.visits(), node.wins());
+    }
+
+    pub fn reset<G: Game>(&mut self, pos: &G) {
         self.nodes.clear();
+
+        let node = self.add(Node::new(GameState::Ongoing, pos.hash(), -1));
+        self.set_root(node);
     }
 
     pub fn is_empty(&self) -> bool {
@@ -83,10 +103,6 @@ impl Tree {
 
     pub fn len(&self) -> i32 {
         self.nodes.len() as i32
-    }
-
-    fn set_root(&mut self, root: i32) {
-        self.root = root;
     }
 
     fn find<G: Game>(&self, index: i32, child: &G, board: &G, depth: usize) -> i32 {

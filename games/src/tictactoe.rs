@@ -22,14 +22,15 @@ impl From<u16> for TicTacToeMove {
 }
 
 impl From<TicTacToeMove> for u16 {
-    fn from(value: TicTacToeMove) -> Self {
-        value.0
+    fn from(mov: TicTacToeMove) -> Self {
+        mov.0
     }
 }
+
 #[allow(dead_code)]
 impl TicTacToe {
     pub fn print(&self) {
-        let mut grid = vec!["_"; 9];
+        let mut grid = vec!["."; 9];
 
         for i in 0..9 {
             if ((self.grid[0] >> i) & 1) != 0 {
@@ -37,7 +38,7 @@ impl TicTacToe {
             }
 
             if ((self.grid[1] >> i) & 1) != 0 {
-                grid.insert(i, "0");
+                grid.insert(i, "O");
             }
         }
 
@@ -90,6 +91,10 @@ impl Game for TicTacToe {
         }
 
         GameState::Ongoing
+    }
+
+    fn hash(&self) -> u64 {
+        ((self.grid[0] as u64) << 9) | self.grid[1] as u64
     }
 
     fn get_value(&mut self) -> f32 {
