@@ -1,8 +1,8 @@
 use mentor::{Game, GameState};
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct Connect4 {
-    pub side_to_move: usize,
+    pub side_to_move: bool,
     pub current: u64,
     pub mask: u64,
 }
@@ -31,14 +31,8 @@ impl From<Connect4Move> for u16 {
 impl Game for Connect4 {
     type Move = Connect4Move;
 
-    fn equals(&self, other: &Self) -> bool {
-        self.side_to_move == other.side_to_move
-            && self.current == other.current
-            && self.mask == other.mask
-    }
-
     fn side_to_move(&self) -> usize {
-        self.side_to_move
+        usize::from(self.side_to_move)
     }
 
     fn game_state(&self) -> GameState {
@@ -85,7 +79,7 @@ impl Game for Connect4 {
 
         self.current ^= self.mask;
         self.mask |= self.mask + Connect4::bottom_mask(col as usize);
-        self.side_to_move = (self.side_to_move + 1) % 2;
+        self.side_to_move ^= true;
     }
 
     fn get_moves(&self) -> Vec<Self::Move> {

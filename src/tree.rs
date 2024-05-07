@@ -106,7 +106,7 @@ impl Tree {
     }
 
     fn find<G: Game>(&self, index: i32, child: &G, board: &G, depth: usize) -> i32 {
-        if child.equals(board) {
+        if child == board {
             return index;
         }
 

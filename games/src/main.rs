@@ -10,7 +10,7 @@ use crate::connect4::Connect4;
 
 fn main() {
     let mut game = Connect4 {
-        side_to_move: 0,
+        side_to_move: false,
         current: 0,
         mask: 0,
     };
@@ -23,7 +23,7 @@ fn main() {
         };
 
         let mov = match game.side_to_move {
-            0 => search.run(Some(game), settings),
+            false => search.run(Some(game), settings),
             _ => {
                 let mut input_line = String::new();
                 std::io::stdin()

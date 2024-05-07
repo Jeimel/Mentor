@@ -1,8 +1,8 @@
 use mentor::{Game, GameState};
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct TicTacToe {
-    pub side_to_move: usize,
+    pub side_to_move: bool,
     pub grid: [u16; 2],
 }
 
@@ -56,12 +56,8 @@ impl TicTacToe {
 impl Game for TicTacToe {
     type Move = TicTacToeMove;
 
-    fn equals(&self, other: &Self) -> bool {
-        self.grid[0] == other.grid[0] && self.grid[1] == other.grid[1]
-    }
-
     fn side_to_move(&self) -> usize {
-        self.side_to_move
+        usize::from(self.side_to_move)
     }
 
     fn game_state(&self) -> GameState {
@@ -76,12 +72,13 @@ impl Game for TicTacToe {
             0b001_010_100,
         ];
 
+        let side_to_move = self.side_to_move();
         for bitboard in bitboards {
-            if (self.grid[(self.side_to_move + 1) % 2] & bitboard).count_ones() == 3 {
+            if (self.grid[side_to_move ^ 1] & bitboard).count_ones() == 3 {
                 return GameState::Loss;
             }
 
-            if (self.grid[self.side_to_move] & bitboard).count_ones() == 3 {
+            if (self.grid[side_to_move] & bitboard).count_ones() == 3 {
                 return GameState::Win;
             }
         }
@@ -121,8 +118,8 @@ impl Game for TicTacToe {
             panic!();
         }
 
-        self.grid[self.side_to_move] |= mov.0;
-        self.side_to_move = (self.side_to_move + 1) % 2;
+        self.grid[self.side_to_move()] |= mov.0;
+        self.side_to_move ^= true;
     }
 
     fn get_moves(&self) -> Vec<Self::Move> {
