@@ -7,22 +7,23 @@ pub struct TicTacToe {
 }
 
 #[derive(Clone, Copy)]
-pub struct TicTacToeMove(pub u16);
+pub struct Move(pub u16);
 
-impl std::fmt::Display for TicTacToeMove {
+impl std::fmt::Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.trailing_zeros())
+        let mov = self.0.trailing_zeros();
+        write!(f, "{}{}", mov % 3, mov / 3)
     }
 }
 
-impl From<u16> for TicTacToeMove {
+impl From<u16> for Move {
     fn from(mov: u16) -> Self {
-        TicTacToeMove(mov)
+        Move(mov)
     }
 }
 
-impl From<TicTacToeMove> for u16 {
-    fn from(mov: TicTacToeMove) -> Self {
+impl From<Move> for u16 {
+    fn from(mov: Move) -> Self {
         mov.0
     }
 }
@@ -54,7 +55,7 @@ impl TicTacToe {
 }
 
 impl Game for TicTacToe {
-    type Move = TicTacToeMove;
+    type Move = Move;
 
     fn side_to_move(&self) -> usize {
         usize::from(self.side_to_move)
@@ -100,7 +101,7 @@ impl Game for TicTacToe {
         let side_to_move = pos.side_to_move();
 
         while pos.game_state() == GameState::Ongoing {
-            let moves = pos.get_moves();
+            let moves = pos.get_legal_moves();
             let index = (rand::random::<f32>() * moves.len() as f32).floor() as usize;
 
             pos.make_move(moves[index]);
@@ -114,15 +115,11 @@ impl Game for TicTacToe {
     }
 
     fn make_move(&mut self, mov: Self::Move) {
-        if self.game_state() != GameState::Ongoing {
-            panic!();
-        }
-
         self.grid[self.side_to_move()] |= mov.0;
         self.side_to_move ^= true;
     }
 
-    fn get_moves(&self) -> Vec<Self::Move> {
+    fn get_legal_moves(&self) -> Vec<Self::Move> {
         let mut moves = Vec::new();
 
         if self.game_state() != GameState::Ongoing {
@@ -132,7 +129,7 @@ impl Game for TicTacToe {
         let mut index = 1u16;
         while index <= 256 {
             if ((self.grid[0] | self.grid[1]) & index) == 0 {
-                moves.push(TicTacToeMove(index))
+                moves.push(Move(index))
             }
 
             index <<= 1;

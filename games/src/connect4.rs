@@ -8,28 +8,28 @@ pub struct Connect4 {
 }
 
 #[derive(Clone, Copy)]
-pub struct Connect4Move(pub u16);
+pub struct Move(pub u16);
 
-impl std::fmt::Display for Connect4Move {
+impl std::fmt::Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.trailing_zeros())
     }
 }
 
-impl From<u16> for Connect4Move {
+impl From<u16> for Move {
     fn from(mov: u16) -> Self {
-        Connect4Move(mov)
+        Move(mov)
     }
 }
 
-impl From<Connect4Move> for u16 {
-    fn from(mov: Connect4Move) -> Self {
+impl From<Move> for u16 {
+    fn from(mov: Move) -> Self {
         mov.0
     }
 }
 
 impl Game for Connect4 {
-    type Move = Connect4Move;
+    type Move = Move;
 
     fn side_to_move(&self) -> usize {
         usize::from(self.side_to_move)
@@ -61,7 +61,7 @@ impl Game for Connect4 {
         let side_to_move = pos.side_to_move();
 
         while pos.game_state() == GameState::Ongoing {
-            let moves = pos.get_moves();
+            let moves = pos.get_legal_moves();
             let index = (rand::random::<f32>() * moves.len() as f32).floor() as usize;
 
             pos.make_move(moves[index]);
@@ -82,7 +82,7 @@ impl Game for Connect4 {
         self.side_to_move ^= true;
     }
 
-    fn get_moves(&self) -> Vec<Self::Move> {
+    fn get_legal_moves(&self) -> Vec<Self::Move> {
         let mut moves = Vec::new();
 
         if self.game_state() != GameState::Ongoing {

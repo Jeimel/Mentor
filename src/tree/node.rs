@@ -54,7 +54,7 @@ impl Node {
     pub fn expand<G: Game>(&mut self, pos: &G) {
         assert!(self.is_not_expanded());
 
-        for mov in pos.get_moves() {
+        for mov in pos.get_legal_moves() {
             self.actions.push(Edge::new(mov.into()));
         }
     }

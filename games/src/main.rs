@@ -1,3 +1,4 @@
+mod chess;
 mod connect4;
 mod tictactoe;
 

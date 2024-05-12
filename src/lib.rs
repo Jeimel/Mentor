@@ -23,5 +23,5 @@ pub trait Game: Clone + Copy + Default + Eq {
 
     fn make_move(&mut self, mov: Self::Move);
 
-    fn get_moves(&self) -> Vec<Self::Move>;
+    fn get_legal_moves(&self) -> Vec<Self::Move>;
 }
