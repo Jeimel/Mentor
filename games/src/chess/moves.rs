@@ -84,3 +84,13 @@ pub const fn get_pawn_attacks(square: Square, side: usize) -> Bitboard {
 
     PAWN[side][square as usize]
 }
+
+#[inline(always)]
+pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
+    Bitboard(0)
+}
+
+#[inline(always)]
+pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
+    Bitboard(0)
+}

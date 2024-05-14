@@ -1,9 +1,14 @@
-use super::{moves::Move, types::bitboard::Bitboard};
+use super::{
+    moves::Move,
+    types::{bitboard::Bitboard, square::Square},
+};
 use crate::{
     bitboard_loop,
     chess::{
-        moves::{get_king_moves, get_knight_moves, get_pawn_attacks},
-        util::{Attacks, Flag, Piece},
+        moves::{
+            get_bishop_moves, get_king_moves, get_knight_moves, get_pawn_attacks, get_rook_moves,
+        },
+        util::{Attacks, Castle, Flag, Piece},
     },
 };
 
@@ -28,15 +33,10 @@ impl Board {
         let mut pawn_mask = self.bitboards[Piece::PAWN] & self.bitboards[side];
         bitboard_loop!(pawn_mask, from, {
             let attack_mask = get_pawn_attacks(from, side);
-
             let shift: u64 = if self.side_to_move { 16 } else { 40 };
 
             let mut capture_mask =
-                attack_mask & self.bitboards[side ^ 1] & !Attacks::END_SQUARE[side];
-            let mut en_passant_mask =
-                attack_mask & Bitboard((u64::from(self.en_passant_square)) << shift);
-            let mut promo_mask = attack_mask & self.bitboards[side ^ 1] & Attacks::END_SQUARE[side];
-
+                attack_mask & self.bitboards[side ^ 1] & !Attacks::END_RANK[side];
             bitboard_loop!(
                 capture_mask,
                 to,
@@ -46,6 +46,11 @@ impl Board {
                     flag: Flag::CAPTURE
                 })
             );
+
+            let mut en_passant_mask =
+                attack_mask & Bitboard((u64::from(self.en_passant_square)) << shift);
+
+            let mut promo_mask = attack_mask & self.bitboards[side ^ 1] & Attacks::END_RANK[side];
             bitboard_loop!(
                 en_passant_mask,
                 to,
@@ -72,10 +77,10 @@ impl Board {
             bitboard_loop!(piece_mask, from, {
                 let attack_mask = match piece {
                     Piece::KNIGHT => get_knight_moves(from),
-                    Piece::BISHOP => Bitboard(0), // Attacks::bishop(from as usize, occupancy),
-                    Piece::ROOK => Bitboard(0),   // Attacks::rook(from as usize, occupancy),
+                    Piece::BISHOP => get_bishop_moves(from, occupancy),
+                    Piece::ROOK => get_rook_moves(from, occupancy),
                     Piece::QUEEN => {
-                        Bitboard(0) // Attacks::bishop(from as usize, occupancy) | Attacks::rook(from as usize, occupancy)
+                        get_bishop_moves(from, occupancy) | get_rook_moves(from, occupancy)
                     }
                     Piece::KING => get_king_moves(from),
                     _ => Bitboard(0),
@@ -105,10 +110,10 @@ impl Board {
             });
         }
 
-        let empty_shifted = (!occupancy).shift(self.side_to_move);
-        let pawn_mask = self.bitboards[Piece::PAWN] & self.bitboards[side] & empty_shifted;
+        let shifted_empty_squares = (!occupancy).shift(self.side_to_move);
+        let pawn_mask = self.bitboards[Piece::PAWN] & self.bitboards[side] & shifted_empty_squares;
 
-        let mut single_pawn_mask = pawn_mask & !Attacks::PROMO_SQUARE[side];
+        let mut single_pawn_mask = pawn_mask & !Attacks::PROMO_RANK[side];
         bitboard_loop!(single_pawn_mask, from, {
             moves.push(Move {
                 from,
@@ -117,17 +122,18 @@ impl Board {
             });
         });
 
-        let mut double_pawn_mask =
-            pawn_mask & Attacks::PROMO_SQUARE[side ^ 1] & empty_shifted.shift(self.side_to_move);
+        let mut double_pawn_mask = pawn_mask
+            & Attacks::PROMO_RANK[side ^ 1]
+            & shifted_empty_squares.shift(self.side_to_move);
         bitboard_loop!(double_pawn_mask, from, {
             moves.push(Move {
                 from,
                 to: from.shift::<16>(self.side_to_move),
-                flag: Flag::QUIET,
+                flag: Flag::DOUBLE_PAWN,
             });
         });
 
-        let mut promo_mask = pawn_mask & Attacks::PROMO_SQUARE[side];
+        let mut promo_mask = pawn_mask & Attacks::PROMO_RANK[side];
         bitboard_loop!(promo_mask, from, {
             for piece in Piece::KNIGHT..=Piece::QUEEN {
                 moves.push(Move {
@@ -138,6 +144,64 @@ impl Board {
             }
         });
 
+        if self.in_check(side) || self.castle_rights & Castle::RIGHTS[side] == 0 {
+            return moves;
+        }
+
+        let (king, rook, from, to) = if self.side_to_move {
+            (Castle::BLACK_KING, Square::F8, Square::E8, Square::G8)
+        } else {
+            (Castle::WHITE_KING, Square::F1, Square::E1, Square::G1)
+        };
+
+        if occupancy & Castle::MASK[side][0] == Bitboard(0)
+            && self.castle_rights & king != 0
+            && !self.square_attacked(rook, side, occupancy)
+        {
+            moves.push(Move {
+                from,
+                to,
+                flag: Flag::KING_CASTLE,
+            });
+        }
+
+        let (king, rook, to) = if self.side_to_move {
+            (Castle::BLACK_QUEEN, Square::D8, Square::C8)
+        } else {
+            (Castle::WHITE_QUEEN, Square::D1, Square::C1)
+        };
+
+        if occupancy & Castle::MASK[side][1] == Bitboard(0)
+            && self.castle_rights & king != 0
+            && !self.square_attacked(rook, side, occupancy)
+        {
+            moves.push(Move {
+                from,
+                to,
+                flag: Flag::QUEEN_CASTLE,
+            });
+        }
+
         moves
+    }
+
+    fn in_check(&self, side: usize) -> bool {
+        self.square_attacked(
+            (self.bitboards[Piece::KING] & self.bitboards[side]).trailing_zeros() as Square,
+            side,
+            self.bitboards[0] | self.bitboards[1],
+        )
+    }
+
+    fn square_attacked(&self, square: Square, side: usize, occupancy: Bitboard) -> bool {
+        (self.bitboards[Piece::KNIGHT] & get_knight_moves(square)
+            | self.bitboards[Piece::KING] & get_king_moves(square)
+            | self.bitboards[Piece::PAWN] & get_pawn_attacks(square, side)
+            | self.bitboards[Piece::ROOK] & get_rook_moves(square, occupancy)
+            | self.bitboards[Piece::BISHOP] & get_bishop_moves(square, occupancy)
+            | self.bitboards[Piece::QUEEN]
+                & (get_bishop_moves(square, occupancy) | get_rook_moves(square, occupancy)))
+            & self.bitboards[side ^ 1]
+            != Bitboard(0)
     }
 }

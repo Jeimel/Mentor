@@ -29,12 +29,20 @@ impl std::ops::Not for Bitboard {
 
 macro_rules! impl_math_ops {
     ($($trait:ident, $fn:ident $(,$trait_assign:ident, $fn_assign:ident)?;)*) => {$(
-        impl $trait for Bitboard {
+        impl_math_ops!($trait<Self>, $fn(.0) $(,$trait_assign, $fn_assign)?;);
+    )*};
+
+    ($($trait:ident<$ty:ty>, $fn:ident;)*) => {$(
+        impl_math_ops!($trait<$ty>, $fn(););
+    )*};
+
+    ($($trait:ident<$ty:ty>, $fn:ident($(.$a:tt)?) $(,$trait_assign:ident, $fn_assign:ident)?;)*) => {$(
+        impl $trait<$ty> for Bitboard {
             type Output = Self;
 
             #[inline(always)]
-            fn $fn(self, rhs: Self) -> Self::Output {
-                Self($trait::$fn(self.0, rhs.0))
+            fn $fn(self, rhs: $ty) -> Self::Output {
+                Self($trait::$fn(self.0, rhs$(.$a)?))
             }
         }
 
