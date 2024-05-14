@@ -1,9 +1,11 @@
+use super::types::bitboard::Bitboard;
+
 #[macro_export]
 macro_rules! bitboard_loop {
     ($bitboard:expr, $square:ident, $func:expr) => {
-        while $bitboard != 0 {
-            let $square = $bitboard.trailing_zeros() as u8;
-            $bitboard &= $bitboard - 1;
+        while $bitboard != Bitboard(0) {
+            let $square = $bitboard.trailing_zeros();
+            $bitboard &= $bitboard - Bitboard(1);
             $func;
         }
     };
@@ -19,6 +21,7 @@ macro_rules! c_enum {
     };
 }
 
+#[macro_export]
 macro_rules! lookup_table {
     ($square:ident, $size:expr, $($pattern:tt)+) => {
         {
@@ -57,33 +60,6 @@ c_enum!(Flag {
 c_enum!(Attacks {
     NOT_FILE_A: u64 = 0xfefefefefefefefe,
     NOT_FILE_H: u64 = 0x7f7f7f7f7f7f7f7f,
-    PROMO_SQUARE: [u64; 2] = [0x00FF000000000000, 0x000000000000FF00],
-    END_SQUARE: [u64; 2] = [0xFF00000000000000, 0x00000000000000FF],
-    KING: [u64; 64] = lookup_table!(square, 64, {
-        let mut n = 1 << square;
-
-        n |= (n << 8) | (n >> 8);
-        n |= ((n & Attacks::NOT_FILE_A) >> 1) | ((n & Attacks::NOT_FILE_H) << 1);
-        n ^ (1 << square)
-    }),
-    PAWN: [[u64; 64]; 2] = [
-        lookup_table!(square, 64, {
-            let n = 1 << square;
-
-            ((n & Attacks::NOT_FILE_A) << 7) | ((n & Attacks::NOT_FILE_H) << 9)
-        }),
-        lookup_table!(square, 64, {
-            let n = 1 << square;
-
-            ((n & Attacks::NOT_FILE_A) >> 9) | ((n & Attacks::NOT_FILE_H) >> 7)
-        }),
-    ],
-    KNIGHT: [u64; 64] = lookup_table!(square, 64, {
-        let n = 1 << square;
-
-        let h1 = (n >> 1) & Attacks::NOT_FILE_H | (n << 1) & Attacks::NOT_FILE_A;
-        let h2 = (n >> 2) & 0x3f3f3f3f3f3f3f3f | (n << 2) & 0xfcfcfcfcfcfcfcfc;
-
-        (h1 << 16) | (h1 >> 16) | (h2 << 8) | (h2 >> 8)
-    }),
+    PROMO_SQUARE: [Bitboard; 2] = [Bitboard(0x00FF000000000000), Bitboard(0x000000000000FF00)],
+    END_SQUARE: [Bitboard; 2] = [Bitboard(0xFF00000000000000), Bitboard(0x00000000000000FF)],
 });
