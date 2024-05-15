@@ -62,7 +62,7 @@ impl Game for TicTacToe {
     }
 
     fn game_state(&self) -> GameState {
-        let bitboards = [
+        const BITBOARDS: [u16; 8] = [
             0b111_000_000,
             0b000_111_000,
             0b000_000_111,
@@ -74,7 +74,7 @@ impl Game for TicTacToe {
         ];
 
         let side_to_move = self.side_to_move();
-        for bitboard in bitboards {
+        for bitboard in BITBOARDS {
             if (self.grid[side_to_move ^ 1] & bitboard).count_ones() == 3 {
                 return GameState::Loss;
             }
@@ -108,8 +108,8 @@ impl Game for TicTacToe {
         }
 
         match pos.game_state() {
-            GameState::Draw => 0.0,
-            _ if side_to_move == pos.side_to_move() => -1.0,
+            GameState::Draw => 0.5,
+            _ if side_to_move == pos.side_to_move() => 0.0,
             _ => 1.0,
         }
     }

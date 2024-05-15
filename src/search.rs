@@ -48,24 +48,18 @@ impl<G: Game> Search<G> {
             };
         }
 
-        println!("{}", self.tree.len());
-
         self.tree[self.tree.root()]
             .actions()
             .iter()
             .map(|edge| {
                 println!(
-                    "Move {} Score {} Wins {} Visits {}",
+                    "Move {} Score {} Visits {}",
                     edge.mov(),
-                    -self.tree[edge.ptr()].wins() / self.tree[edge.ptr()].visits(),
                     self.tree[edge.ptr()].wins(),
                     self.tree[edge.ptr()].visits()
                 );
 
-                (
-                    -self.tree[edge.ptr()].wins() / self.tree[edge.ptr()].visits(),
-                    edge.mov(),
-                )
+                (self.tree[edge.ptr()].visits(), edge.mov())
             })
             .max_by(|(a, _), (b, _)| a.total_cmp(b))
             .map(|(_, mov)| mov)
@@ -74,48 +68,67 @@ impl<G: Game> Search<G> {
     }
 
     pub fn execute_iteration(&mut self, index: i32, pos: &mut G) -> f32 {
-        if self.tree[index].visits() == 0.0 {
-            let reward = pos.get_value();
-            self.tree[index].propagate(reward);
+        let reward = if self.tree[index].visits() == 0.0 || self.tree[index].is_terminal() {
+            self.get_utility(index, pos)
+        } else {
+            if self.tree[index].is_not_expanded() {
+                self.tree[index].expand(pos);
+            }
 
-            return reward;
-        }
+            let action = self.pick_action(index);
+            let edge = self.tree.edge(index, action);
 
-        if self.tree[index].is_terminal() {
-            return self.tree[index].wins() / self.tree[index].visits();
-        }
+            let mut edge_ptr = edge.ptr();
 
-        if self.tree[index].is_not_expanded() {
-            self.tree[index].expand(pos);
-        }
+            pos.make_move(edge.mov().into());
 
-        let n = self.tree[index].visits();
-        let (edge, mut new_index, mov) = self.tree[index]
-            .actions()
-            .iter()
-            .enumerate()
-            .map(|(index, edge)| {
-                if edge.ptr() == -1 {
-                    return (index, f32::INFINITY, -1, edge.mov());
-                }
+            if edge.ptr() == -1 {
+                edge_ptr = self
+                    .tree
+                    .add(Node::new(pos.game_state(), pos.hash(), index));
+                self.tree.edge_mut(index, action).set_ptr(edge_ptr);
+            }
 
-                (index, self.tree.uct(edge.ptr(), n), edge.ptr(), edge.mov())
-            })
-            .max_by(|(_, a, _, _), (_, b, _, _)| a.total_cmp(b))
-            .map(|(edge, _, index, mov)| (edge, index, mov))
-            .unwrap();
+            self.execute_iteration(edge_ptr, pos)
+        };
 
-        pos.make_move(mov.into());
-
-        if new_index == -1 {
-            let node = Node::new(pos.game_state(), pos.hash(), index);
-            new_index = self.tree.add(node);
-            self.tree[index].mut_edge(edge).set_ptr(new_index);
-        }
-
-        let reward = -self.execute_iteration(new_index, pos);
+        let reward = 1.0 - reward;
         self.tree.propagate(index, reward);
 
         reward
+    }
+
+    fn pick_action(&self, index: i32) -> usize {
+        let node = &self.tree[index];
+
+        let expl = 1.41 * (node.visits().ln()).sqrt();
+
+        let mut best = 0;
+        let mut max = f32::NEG_INFINITY;
+
+        for (i, action) in node.actions().iter().enumerate() {
+            if action.ptr() == -1 {
+                return i;
+            }
+
+            let uct = self.tree[action.ptr()].wins() / self.tree[action.ptr()].visits()
+                + expl / self.tree[action.ptr()].visits().sqrt();
+
+            if max < uct {
+                best = i;
+                max = uct;
+            }
+        }
+
+        best
+    }
+
+    fn get_utility(&self, index: i32, pos: &mut G) -> f32 {
+        match self.tree[index].game_state() {
+            crate::GameState::Ongoing => pos.get_value(),
+            crate::GameState::Win => 1.0,
+            crate::GameState::Draw => 0.5,
+            crate::GameState::Loss => 0.0,
+        }
     }
 }

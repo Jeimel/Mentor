@@ -2,7 +2,7 @@ pub mod edge;
 pub mod hash;
 pub mod node;
 
-use self::{hash::HashTable, node::Node};
+use self::{edge::Edge, hash::HashTable, node::Node};
 use crate::{Game, GameState};
 use std::ops::{Index, IndexMut};
 
@@ -73,16 +73,6 @@ impl Tree {
         }
     }
 
-    pub fn uct(&self, index: i32, n: f32) -> f32 {
-        let (visits, wins) = if let Some(entry) = self.table.get(self[index].hash()) {
-            (entry.visits, entry.wins)
-        } else {
-            (self[index].visits(), self[index].wins())
-        };
-
-        (-wins / visits) + (Tree::C * n.ln() / self[index].visits()).sqrt()
-    }
-
     pub fn propagate(&mut self, index: i32, reward: f32) {
         self[index].propagate(reward);
 
@@ -103,6 +93,14 @@ impl Tree {
 
     pub fn len(&self) -> i32 {
         self.nodes.len() as i32
+    }
+
+    pub fn edge(&self, index: i32, edge: usize) -> &Edge {
+        &self[index].actions()[edge]
+    }
+
+    pub fn edge_mut(&mut self, index: i32, edge: usize) -> &mut Edge {
+        &mut self[index].actions_mut()[edge]
     }
 
     fn find<G: Game>(&self, index: i32, child: &G, board: &G, depth: usize) -> i32 {

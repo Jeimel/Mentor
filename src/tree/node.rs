@@ -35,8 +35,8 @@ impl Node {
         self.hash
     }
 
-    pub fn mut_edge(&mut self, index: usize) -> &mut Edge {
-        &mut self.actions[index]
+    pub fn actions_mut(&mut self) -> &mut Vec<Edge> {
+        &mut self.actions
     }
 
     pub fn actions(&self) -> &Vec<Edge> {

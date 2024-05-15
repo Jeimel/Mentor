@@ -18,7 +18,7 @@ pub struct Board {
     bitboards: [Bitboard; 8],
     half_moves: u8,
     castle_rights: u8,
-    en_passant_square: u8,
+    en_passant_rank: u8,
     check: bool,
     hash: u64,
 }
@@ -48,7 +48,7 @@ impl Board {
             );
 
             let mut en_passant_mask =
-                attack_mask & Bitboard((u64::from(self.en_passant_square)) << shift);
+                attack_mask & Bitboard((u64::from(self.en_passant_rank)) << shift);
 
             let mut promo_mask = attack_mask & self.bitboards[side ^ 1] & Attacks::END_RANK[side];
             bitboard_loop!(
