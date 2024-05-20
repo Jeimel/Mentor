@@ -3,9 +3,8 @@ mod moves;
 mod types;
 mod util;
 
-use mentor::Game;
-
 use self::{board::Board, moves::Move};
+use mentor::Game;
 
 #[derive(Copy, Clone, Default, PartialEq, Eq)]
 pub struct Chess {
@@ -31,7 +30,7 @@ impl Game for Chess {
         todo!()
     }
 
-    fn make_move(&mut self, mov: Self::Move) {
+    fn make_move(&mut self, _: Self::Move) {
         todo!()
     }
 

@@ -27,8 +27,6 @@ impl IndexMut<i32> for Tree {
 }
 
 impl Tree {
-    const C: f32 = 2.0;
-
     pub fn new(capacity: usize) -> Self {
         Tree {
             root: -1,

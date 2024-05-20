@@ -129,25 +129,21 @@ impl Connect4 {
     }
 
     fn alignment(pos: u64) -> bool {
-        // horizontal
         let mut m = pos & (pos >> (Connect4::HEIGHT + 1));
         if (m & (m >> (2 * (Connect4::HEIGHT + 1)))) > 0 {
             return true;
         }
 
-        // diagonal 1
         m = pos & (pos >> Connect4::HEIGHT);
         if (m & (m >> (2 * Connect4::HEIGHT))) > 0 {
             return true;
         }
 
-        // diagonal 2
         m = pos & (pos >> (Connect4::HEIGHT + 2));
         if (m & (m >> (2 * (Connect4::HEIGHT + 2)))) > 0 {
             return true;
         }
 
-        // vertical;
         m = pos & (pos >> 1);
         if (m & (m >> 2)) > 0 {
             return true;

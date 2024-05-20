@@ -1,40 +1,9 @@
-macro_rules! squares {
-    ($($square:ident,)*) => {
-        #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-        pub enum Square {
-            $($square),*
-        }
+use crate::type_enum;
 
-        impl Square {
-            pub const NUM: usize = [$(Self::$square),*].len();
-            pub const ALL: [Self; Self::NUM] = [$(Self::$square),*];
-
-            pub fn shift<const SHIFT: usize>(self, side_to_move: bool) -> Self {
-                if side_to_move {
-                    Square::ALL[self as usize - SHIFT]
-                } else {
-                    Square::ALL[self as usize + SHIFT]
-                }
-            }
-        }
-
-        impl std::fmt::Display for Square {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                let square = *self as u8;
-
-                write!(
-                    f,
-                    "{}{}",
-                    char::from(97u8 - (square & 0b111)),
-                    (square >> 3) + 1
-                )
-            }
-        }
-    };
-}
+use super::{bitboard::Bitboard, file::File, rank::Rank};
 
 #[rustfmt::skip]
-squares!(
+type_enum!(Square {
     A1, B1, C1, D1, E1, F1, G1, H1,
     A2, B2, C2, D2, E2, F2, G2, H2,
     A3, B3, C3, D3, E3, F3, G3, H3,
@@ -43,4 +12,32 @@ squares!(
     A6, B6, C6, D6, E6, F6, G6, H6,
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8,
-);
+});
+
+impl Square {
+    pub const fn bitboard(self) -> Bitboard {
+        Bitboard(1 << (self as u64))
+    }
+
+    pub const fn file(self) -> File {
+        File::ALL[(self as usize) & 7]
+    }
+
+    pub const fn rank(self) -> Rank {
+        Rank::ALL[(self as usize) >> 3]
+    }
+
+    pub fn shift<const SHIFT: usize>(self, side_to_move: bool) -> Self {
+        if side_to_move {
+            Square::ALL[self as usize - SHIFT]
+        } else {
+            Square::ALL[self as usize + SHIFT]
+        }
+    }
+}
+
+impl std::fmt::Display for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.rank(), self.file())
+    }
+}

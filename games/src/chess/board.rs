@@ -1,14 +1,12 @@
-use super::{
-    moves::Move,
-    types::{bitboard::Bitboard, square::Square},
-};
+use super::{moves::Move, types::bitboard::Bitboard};
 use crate::{
     bitboard_loop,
     chess::{
         moves::{
             get_bishop_moves, get_king_moves, get_knight_moves, get_pawn_attacks, get_rook_moves,
         },
-        util::{Attacks, Castle, Flag, Piece},
+        types::{rank::Rank, square::Square},
+        util::{Castle, Flag, Piece},
     },
 };
 
@@ -36,7 +34,7 @@ impl Board {
             let shift: u64 = if self.side_to_move { 16 } else { 40 };
 
             let mut capture_mask =
-                attack_mask & self.bitboards[side ^ 1] & !Attacks::END_RANK[side];
+                attack_mask & self.bitboards[side ^ 1] & !Rank::END[side].bitboard();
             bitboard_loop!(
                 capture_mask,
                 to,
@@ -50,7 +48,8 @@ impl Board {
             let mut en_passant_mask =
                 attack_mask & Bitboard((u64::from(self.en_passant_rank)) << shift);
 
-            let mut promo_mask = attack_mask & self.bitboards[side ^ 1] & Attacks::END_RANK[side];
+            let mut promo_mask =
+                attack_mask & self.bitboards[side ^ 1] & Rank::END[side].bitboard();
             bitboard_loop!(
                 en_passant_mask,
                 to,
@@ -113,7 +112,7 @@ impl Board {
         let shifted_empty_squares = (!occupancy).shift(self.side_to_move);
         let pawn_mask = self.bitboards[Piece::PAWN] & self.bitboards[side] & shifted_empty_squares;
 
-        let mut single_pawn_mask = pawn_mask & !Attacks::PROMO_RANK[side];
+        let mut single_pawn_mask = pawn_mask & !Rank::PROMO[side].bitboard();
         bitboard_loop!(single_pawn_mask, from, {
             moves.push(Move {
                 from,
@@ -123,7 +122,7 @@ impl Board {
         });
 
         let mut double_pawn_mask = pawn_mask
-            & Attacks::PROMO_RANK[side ^ 1]
+            & Rank::PROMO[side ^ 1].bitboard()
             & shifted_empty_squares.shift(self.side_to_move);
         bitboard_loop!(double_pawn_mask, from, {
             moves.push(Move {
@@ -133,7 +132,7 @@ impl Board {
             });
         });
 
-        let mut promo_mask = pawn_mask & Attacks::PROMO_RANK[side];
+        let mut promo_mask = pawn_mask & Rank::PROMO[side].bitboard();
         bitboard_loop!(promo_mask, from, {
             for piece in Piece::KNIGHT..=Piece::QUEEN {
                 moves.push(Move {

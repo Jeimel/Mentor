@@ -1,13 +1,31 @@
-use std::ops::{Add, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, Div, Mul, Sub};
+use std::ops::{
+    Add, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div, Mul, Sub,
+};
 
 use super::square::Square;
 
 #[derive(Debug, Copy, Clone, Default, PartialEq, Eq)]
 pub struct Bitboard(pub u64);
 
+impl std::ops::Not for Bitboard {
+    type Output = Self;
+
+    fn not(self) -> Self {
+        Bitboard(!self.0)
+    }
+}
+
 impl Bitboard {
-    pub fn trailing_zeros(&self) -> Square {
+    pub const fn trailing_zeros(&self) -> Square {
         Square::ALL[self.0.trailing_zeros() as usize]
+    }
+
+    pub const fn swap_bytes(self) -> Bitboard {
+        Bitboard(self.0.swap_bytes())
+    }
+
+    pub const fn wrapping_sub(self, rhs: Bitboard) -> Bitboard {
+        Bitboard(self.0.wrapping_sub(rhs.0))
     }
 
     pub fn shift(&self, side_to_move: bool) -> Self {
@@ -16,14 +34,6 @@ impl Bitboard {
         } else {
             Bitboard(self.0 >> 8)
         }
-    }
-}
-
-impl std::ops::Not for Bitboard {
-    type Output = Self;
-
-    fn not(self) -> Self {
-        Bitboard(!self.0)
     }
 }
 
@@ -64,5 +74,5 @@ impl_math_ops!(
     Div, div;
     BitAnd, bitand, BitAndAssign, bitand_assign;
     BitOr, bitor, BitOrAssign, bitor_assign;
-    BitXor, bitxor;
+    BitXor, bitxor, BitXorAssign, bitxor_assign;
 );

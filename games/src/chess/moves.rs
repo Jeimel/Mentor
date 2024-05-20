@@ -1,7 +1,8 @@
-use crate::chess::util::Flag;
-use crate::{chess::util::Attacks, lookup_table};
+use crate::chess::types::bitboard::Bitboard;
+use crate::chess::types::file::File;
+use crate::chess::util::{Flag, DIAGONALS};
+use crate::lookup_table;
 
-use super::types::bitboard::Bitboard;
 use super::types::square::Square;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -27,9 +28,9 @@ impl std::fmt::Display for Move {
 impl From<u16> for Move {
     fn from(mov: u16) -> Self {
         Move {
-            from: Square::ALL[(mov & 0x3F) as usize],
-            to: Square::ALL[(mov & 0xFC0) as usize],
-            flag: (mov & 0xFC00) as u8,
+            from: Square::ALL[(mov & 0b0000_000000_111111) as usize],
+            to: Square::ALL[(mov & 0b0000_111111_000000) as usize],
+            flag: (mov & 0b1111_000000_000000) as u8,
         }
     }
 }
@@ -46,7 +47,7 @@ pub const fn get_king_moves(square: Square) -> Bitboard {
         let mut n = 1 << square;
 
         n |= (n << 8) | (n >> 8);
-        n |= ((n & Attacks::NOT_FILE_A) >> 1) | ((n & Attacks::NOT_FILE_H) << 1);
+        n |= ((n & !File::A.bitboard().0) >> 1) | ((n & !File::H.bitboard().0) << 1);
         Bitboard(n ^ 1 << square)
     });
 
@@ -58,7 +59,7 @@ pub const fn get_knight_moves(square: Square) -> Bitboard {
     const KNIGHT: [Bitboard; 64] = lookup_table!(square, 64, {
         let n = 1 << square;
 
-        let h1 = (n >> 1) & Attacks::NOT_FILE_H | (n << 1) & Attacks::NOT_FILE_A;
+        let h1 = (n >> 1) & !File::H.bitboard().0 | (n << 1) & !File::A.bitboard().0;
         let h2 = (n >> 2) & 0x3f3f3f3f3f3f3f3f | (n << 2) & 0xfcfcfcfcfcfcfcfc;
 
         Bitboard((h1 << 16) | (h1 >> 16) | (h2 << 8) | (h2 >> 8))
@@ -73,12 +74,12 @@ pub const fn get_pawn_attacks(square: Square, side: usize) -> Bitboard {
         lookup_table!(square, 64, {
             let n = 1 << square;
 
-            Bitboard(((n & Attacks::NOT_FILE_A) << 7) | ((n & Attacks::NOT_FILE_H) << 9))
+            Bitboard(((n & !File::A.bitboard().0) << 7) | ((n & !File::H.bitboard().0) << 9))
         }),
         lookup_table!(square, 64, {
             let n = 1 << square;
 
-            Bitboard(((n & Attacks::NOT_FILE_A) >> 9) | ((n & Attacks::NOT_FILE_H) >> 7))
+            Bitboard(((n & !File::A.bitboard().0) >> 9) | ((n & !File::H.bitboard().0) >> 7))
         }),
     ];
 
@@ -92,5 +93,43 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
 
 #[inline(always)]
 pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
-    Bitboard(0)
+    const BISHOP: [Mask; 64] = lookup_table!(square, 64, {
+        let n = 1 << square;
+
+        let file = square & 7;
+        let rank = square >> 3;
+
+        Mask {
+            square: Bitboard(n),
+            square_swapped: Bitboard(n.swap_bytes()),
+            diagonal: Bitboard(n ^ DIAGONALS[7 + file - rank]),
+            anti_diagonal: Bitboard(n ^ DIAGONALS[file + rank].swap_bytes()),
+        }
+    });
+
+    let mask = BISHOP[square as usize];
+
+    let mut diag = occupancy & mask.diagonal;
+    let mut rev1 = diag.swap_bytes();
+    diag = diag.wrapping_sub(mask.square);
+    rev1 = rev1.wrapping_sub(mask.square_swapped);
+    diag ^= rev1.swap_bytes();
+    diag &= mask.diagonal;
+
+    let mut anti = occupancy & mask.anti_diagonal;
+    let mut rev2 = anti.swap_bytes();
+    anti = anti.wrapping_sub(mask.square);
+    rev2 = rev2.wrapping_sub(mask.square_swapped);
+    anti ^= rev2.swap_bytes();
+    anti &= mask.anti_diagonal;
+
+    diag | anti
+}
+
+#[derive(Clone, Copy)]
+struct Mask {
+    square: Bitboard,
+    square_swapped: Bitboard,
+    diagonal: Bitboard,
+    anti_diagonal: Bitboard,
 }
