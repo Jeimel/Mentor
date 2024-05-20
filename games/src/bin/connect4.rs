@@ -1,13 +1,8 @@
-mod chess;
-mod connect4;
-mod tictactoe;
-
+use games::connect4::Connect4;
 use mentor::{
     search::{Search, SearchSettings},
     Game, GameState,
 };
-
-use crate::connect4::Connect4;
 
 fn main() {
     let mut game = Connect4 {

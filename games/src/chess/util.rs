@@ -3,7 +3,7 @@ use super::types::bitboard::Bitboard;
 #[macro_export]
 macro_rules! bitboard_loop {
     ($bitboard:expr, $square:ident, $func:expr) => {
-        while $bitboard != Bitboard(0) {
+        while $bitboard != Bitboard::ZERO {
             let $square = $bitboard.trailing_zeros();
             $bitboard &= $bitboard - Bitboard(1);
             $func;

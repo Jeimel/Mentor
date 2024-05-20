@@ -82,7 +82,7 @@ impl Board {
                         get_bishop_moves(from, occupancy) | get_rook_moves(from, occupancy)
                     }
                     Piece::KING => get_king_moves(from),
-                    _ => Bitboard(0),
+                    _ => Bitboard::ZERO,
                 };
 
                 let mut captures = attack_mask & self.bitboards[side ^ 1];
@@ -153,7 +153,7 @@ impl Board {
             (Castle::WHITE_KING, Square::F1, Square::E1, Square::G1)
         };
 
-        if occupancy & Castle::MASK[side][0] == Bitboard(0)
+        if occupancy & Castle::MASK[side][0] == Bitboard::ZERO
             && self.castle_rights & king != 0
             && !self.square_attacked(rook, side, occupancy)
         {
@@ -170,7 +170,7 @@ impl Board {
             (Castle::WHITE_QUEEN, Square::D1, Square::C1)
         };
 
-        if occupancy & Castle::MASK[side][1] == Bitboard(0)
+        if occupancy & Castle::MASK[side][1] == Bitboard::ZERO
             && self.castle_rights & king != 0
             && !self.square_attacked(rook, side, occupancy)
         {
@@ -201,6 +201,6 @@ impl Board {
             | self.bitboards[Piece::QUEEN]
                 & (get_bishop_moves(square, occupancy) | get_rook_moves(square, occupancy)))
             & self.bitboards[side ^ 1]
-            != Bitboard(0)
+            != Bitboard::ZERO
     }
 }
