@@ -1,6 +1,6 @@
 use crate::chess::types::bitboard::Bitboard;
 use crate::chess::types::file::File;
-use crate::chess::util::{Flag, DIAGONALS};
+use crate::chess::util::Flag;
 use crate::lookup_table;
 
 use super::types::square::Square;
@@ -88,18 +88,72 @@ pub const fn get_pawn_attacks(square: Square, side: usize) -> Bitboard {
 
 #[inline(always)]
 pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
-    Bitboard::ZERO
+    #[derive(Clone, Copy)]
+    struct RookMask {
+        square: Bitboard,
+        square_swapped: Bitboard,
+        file: Bitboard,
+    }
+
+    const ROOK: [RookMask; 64] = lookup_table!(square, 64, {
+        let n = 1 << square;
+
+        let file = square & 7;
+
+        RookMask {
+            square: Bitboard(n),
+            square_swapped: Bitboard(n.swap_bytes()),
+            file: Bitboard(n ^ File::ALL[file].bitboard().0),
+        }
+    });
+
+    let mask = ROOK[square as usize];
+
+    let mut file = occupancy & mask.file;
+    let mut reverse = file.swap_bytes();
+    file = file.wrapping_sub(mask.square);
+    reverse = reverse.wrapping_sub(mask.square_swapped);
+    file ^= reverse.swap_bytes();
+    file &= mask.file;
+
+    file
 }
 
 #[inline(always)]
 pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
-    const BISHOP: [Mask; 64] = lookup_table!(square, 64, {
+    #[derive(Clone, Copy)]
+    struct BishopMask {
+        square: Bitboard,
+        square_swapped: Bitboard,
+        diagonal: Bitboard,
+        anti_diagonal: Bitboard,
+    }
+
+    const BISHOP: [BishopMask; 64] = lookup_table!(square, 64, {
+        pub const DIAGONALS: [u64; 15] = [
+            0x0100000000000000,
+            0x0201000000000000,
+            0x0402010000000000,
+            0x0804020100000000,
+            0x1008040201000000,
+            0x2010080402010000,
+            0x4020100804020100,
+            0x8040201008040201,
+            0x0080402010080402,
+            0x0000804020100804,
+            0x0000008040201008,
+            0x0000000080402010,
+            0x0000000000804020,
+            0x0000000000008040,
+            0x0000000000000080,
+        ];
+
         let n = 1 << square;
 
         let file = square & 7;
         let rank = square >> 3;
 
-        Mask {
+        BishopMask {
             square: Bitboard(n),
             square_swapped: Bitboard(n.swap_bytes()),
             diagonal: Bitboard(n ^ DIAGONALS[7 + file - rank]),
@@ -109,27 +163,24 @@ pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
 
     let mask = BISHOP[square as usize];
 
-    let mut diag = occupancy & mask.diagonal;
-    let mut rev1 = diag.swap_bytes();
-    diag = diag.wrapping_sub(mask.square);
-    rev1 = rev1.wrapping_sub(mask.square_swapped);
-    diag ^= rev1.swap_bytes();
-    diag &= mask.diagonal;
+    let mut diagonal = occupancy & mask.diagonal;
+    let mut reverse = diagonal.swap_bytes();
+    diagonal = diagonal.wrapping_sub(mask.square);
+    reverse = reverse.wrapping_sub(mask.square_swapped);
+    diagonal ^= reverse.swap_bytes();
+    diagonal &= mask.diagonal;
 
-    let mut anti = occupancy & mask.anti_diagonal;
-    let mut rev2 = anti.swap_bytes();
-    anti = anti.wrapping_sub(mask.square);
-    rev2 = rev2.wrapping_sub(mask.square_swapped);
-    anti ^= rev2.swap_bytes();
-    anti &= mask.anti_diagonal;
+    let mut anti_diagonal = occupancy & mask.anti_diagonal;
+    let mut reverse = anti_diagonal.swap_bytes();
+    anti_diagonal = anti_diagonal.wrapping_sub(mask.square);
+    reverse = reverse.wrapping_sub(mask.square_swapped);
+    anti_diagonal ^= reverse.swap_bytes();
+    anti_diagonal &= mask.anti_diagonal;
 
-    diag | anti
+    diagonal | anti_diagonal
 }
 
-#[derive(Clone, Copy)]
-struct Mask {
-    square: Bitboard,
-    square_swapped: Bitboard,
-    diagonal: Bitboard,
-    anti_diagonal: Bitboard,
+#[inline(always)]
+pub fn get_queen_moves(square: Square, occupancy: Bitboard) -> Bitboard {
+    get_bishop_moves(square, occupancy) | get_rook_moves(square, occupancy)
 }

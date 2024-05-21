@@ -3,7 +3,8 @@ use crate::{
     bitboard_loop,
     chess::{
         moves::{
-            get_bishop_moves, get_king_moves, get_knight_moves, get_pawn_attacks, get_rook_moves,
+            get_bishop_moves, get_king_moves, get_knight_moves, get_pawn_attacks, get_queen_moves,
+            get_rook_moves,
         },
         types::{rank::Rank, square::Square},
         util::{Castle, Flag, Piece},
@@ -78,9 +79,7 @@ impl Board {
                     Piece::KNIGHT => get_knight_moves(from),
                     Piece::BISHOP => get_bishop_moves(from, occupancy),
                     Piece::ROOK => get_rook_moves(from, occupancy),
-                    Piece::QUEEN => {
-                        get_bishop_moves(from, occupancy) | get_rook_moves(from, occupancy)
-                    }
+                    Piece::QUEEN => get_queen_moves(from, occupancy),
                     Piece::KING => get_king_moves(from),
                     _ => Bitboard::ZERO,
                 };
