@@ -95,7 +95,7 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
         file: Bitboard,
     }
 
-    const ROOK: [RookMask; 64] = lookup_table!(square, 64, {
+    const FILE: [RookMask; 64] = lookup_table!(square, 64, {
         let n = 1 << square;
 
         let file = square & 7;
@@ -107,7 +107,36 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
         }
     });
 
-    let mask = ROOK[square as usize];
+    const RANK: [Bitboard; 512] = lookup_table!(square, 512, {
+        let file = (square as u64) & 7;
+        let occupancy = (square >> 2) & 2 * 63;
+
+        let mut attacks = Bitboard(0);
+
+        let mut i = (file).wrapping_sub(1);
+        while i != u64::MAX {
+            attacks.0 |= 1 << i;
+            if occupancy & (1 << i) != 0 {
+                break;
+            }
+
+            i = i.wrapping_sub(1);
+        }
+
+        let mut i = file + 1;
+        while i < 8 {
+            attacks.0 |= 1 << i;
+            if occupancy & (1 << i) != 0 {
+                break;
+            }
+
+            i += 1;
+        }
+
+        attacks
+    });
+
+    let mask = FILE[square as usize];
 
     let mut file = occupancy & mask.file;
     let mut reverse = file.swap_bytes();
@@ -116,7 +145,12 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
     file ^= reverse.swap_bytes();
     file &= mask.file;
 
-    file
+    let square = square as u64;
+    let rank_x8 = square & 56;
+    let rank_occ_x2 = (occupancy.0 >> rank_x8) & 2 * 63;
+    let rank = Bitboard(RANK[(4 * rank_occ_x2 + (square & 7)) as usize].0 << rank_x8);
+
+    file | rank
 }
 
 #[inline(always)]
