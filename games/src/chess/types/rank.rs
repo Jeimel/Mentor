@@ -9,7 +9,7 @@ impl Rank {
     pub const PROMO: [Rank; 2] = [Rank::Seventh, Rank::Second];
     pub const END: [Rank; 2] = [Rank::Eighth, Rank::First];
 
-    #[inline(always)]
+    #[inline]
     pub const fn bitboard(self) -> Bitboard {
         const RANK: [Bitboard; 8] = [
             Bitboard(0x00000000000000FF),

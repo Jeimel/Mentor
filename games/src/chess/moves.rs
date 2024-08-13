@@ -41,7 +41,7 @@ impl From<Move> for u16 {
     }
 }
 
-#[inline(always)]
+#[inline]
 pub const fn get_king_moves(square: Square) -> Bitboard {
     const KING: [Bitboard; 64] = lookup_table!(square, 64, {
         let mut n = 1 << square;
@@ -54,7 +54,7 @@ pub const fn get_king_moves(square: Square) -> Bitboard {
     KING[square as usize]
 }
 
-#[inline(always)]
+#[inline]
 pub const fn get_knight_moves(square: Square) -> Bitboard {
     const KNIGHT: [Bitboard; 64] = lookup_table!(square, 64, {
         let n = 1 << square;
@@ -68,7 +68,7 @@ pub const fn get_knight_moves(square: Square) -> Bitboard {
     KNIGHT[square as usize]
 }
 
-#[inline(always)]
+#[inline]
 pub const fn get_pawn_attacks(square: Square, side: usize) -> Bitboard {
     const PAWN: [[Bitboard; 64]; 2] = [
         lookup_table!(square, 64, {
@@ -86,7 +86,7 @@ pub const fn get_pawn_attacks(square: Square, side: usize) -> Bitboard {
     PAWN[side][square as usize]
 }
 
-#[inline(always)]
+#[inline]
 pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
     #[derive(Clone, Copy)]
     struct RookMask {
@@ -113,7 +113,7 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
 
         let mut attacks = Bitboard(0);
 
-        let mut i = (file).wrapping_sub(1);
+        let mut i = file.wrapping_sub(1);
         while i != u64::MAX {
             attacks.0 |= 1 << i;
             if occupancy & (1 << i) != 0 {
@@ -153,7 +153,7 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
     file | rank
 }
 
-#[inline(always)]
+#[inline]
 pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
     #[derive(Clone, Copy)]
     struct BishopMask {
@@ -214,7 +214,7 @@ pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
     diagonal | anti_diagonal
 }
 
-#[inline(always)]
+#[inline]
 pub fn get_queen_moves(square: Square, occupancy: Bitboard) -> Bitboard {
     get_bishop_moves(square, occupancy) | get_rook_moves(square, occupancy)
 }

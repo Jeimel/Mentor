@@ -8,7 +8,7 @@ type_enum!(File {
 });
 
 impl File {
-    #[inline(always)]
+    #[inline]
     pub const fn bitboard(self) -> Bitboard {
         const FILE: [Bitboard; 8] = [
             Bitboard(0x0101010101010101),

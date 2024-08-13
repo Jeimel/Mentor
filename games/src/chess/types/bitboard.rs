@@ -52,7 +52,7 @@ macro_rules! impl_math_ops {
         impl $trait<$ty> for Bitboard {
             type Output = Self;
 
-            #[inline(always)]
+            #[inline]
             fn $fn(self, rhs: $ty) -> Self::Output {
                 Self($trait::$fn(self.0, rhs$(.$a)?))
             }
@@ -60,7 +60,7 @@ macro_rules! impl_math_ops {
 
         $(
             impl $trait_assign for Bitboard {
-                #[inline(always)]
+                #[inline]
                 fn $fn_assign(&mut self, rhs: Self) {
                     self.0 = $trait::$fn(self.0, rhs.0);
                 }

@@ -7,3 +7,11 @@ authors = ["Felix Jablinski"]
 [dependencies]
 rand = "0.8.5"
 mentor = { path = "../" }
+
+[[bin]]
+name = "connect4"
+path = "src/bin/connect4.rs"
+
+[[bin]]
+name = "client"
+path = "src/bin/chess.rs"
