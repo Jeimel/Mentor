@@ -1,18 +1,10 @@
 use std::time::Instant;
 
 use crate::{
+    helper::{MctsParameter, SearchSettings},
     tree::{node::Node, Tree},
     Game,
 };
-
-pub struct SearchSettings {
-    pub max_time: Option<u128>,
-    pub max_nodes: usize,
-}
-
-pub struct MctsParameter {
-    pub cpuct: f32,
-}
 
 pub struct Search<G: Game> {
     root: G,
@@ -107,7 +99,7 @@ impl<G: Game> Search<G> {
     fn pick_action(&self, index: i32) -> usize {
         let node = &self.tree[index];
 
-        let expl = self.params.cpuct * node.visits().sqrt();
+        let expl = self.params.cpuct(&node) * node.visits().sqrt();
 
         let mut best = 0;
         let mut max = f32::NEG_INFINITY;

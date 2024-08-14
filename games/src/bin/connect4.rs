@@ -1,6 +1,7 @@
 use games::connect4::Connect4;
 use mentor::{
-    search::{MctsParameter, Search, SearchSettings},
+    helper::{MctsParameter, SearchSettings},
+    search::Search,
     Game, GameState,
 };
 
@@ -11,7 +12,7 @@ fn main() {
         mask: 0,
     };
 
-    let params = MctsParameter { cpuct: 1.41 };
+    let params = MctsParameter::new(1.41, 0.25);
 
     let mut search = Search::new(game, 50_000, params);
     while game.game_state() == GameState::Ongoing {
