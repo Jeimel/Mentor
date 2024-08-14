@@ -51,11 +51,26 @@ impl Node {
         self.wins
     }
 
-    pub fn expand<G: Game>(&mut self, pos: &G) {
+    pub fn q(&self) -> f32 {
+        self.wins / self.visits
+    }
+
+    pub fn expand<G: Game>(&mut self, pos: &mut G) {
         assert!(self.is_not_expanded());
 
-        for mov in pos.get_legal_moves() {
+        let moves = pos.get_legal_moves();
+        let policies = pos.get_policies(&moves);
+
+        if moves.len() != policies.len() {
+            panic!("Number of moves doesn't match number of policies.")
+        }
+
+        for mov in moves {
             self.actions.push(Edge::new(mov.into()));
+        }
+
+        for (i, action) in self.actions.iter_mut().enumerate() {
+            action.set_policy(policies[i]);
         }
     }
 

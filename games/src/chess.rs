@@ -30,6 +30,10 @@ impl Game for Chess {
         todo!()
     }
 
+    fn get_policies(&mut self, _: &Vec<Self::Move>) -> Vec<f32> {
+        todo!()
+    }
+
     fn make_move(&mut self, _: Self::Move) {
         todo!()
     }

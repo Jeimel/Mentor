@@ -10,16 +10,22 @@ pub struct SearchSettings {
     pub max_nodes: usize,
 }
 
+pub struct MctsParameter {
+    pub cpuct: f32,
+}
+
 pub struct Search<G: Game> {
     root: G,
     tree: Tree,
+    params: MctsParameter,
 }
 
 impl<G: Game> Search<G> {
-    pub fn new(pos: G, capacity: usize) -> Self {
+    pub fn new(pos: G, capacity: usize, params: MctsParameter) -> Self {
         Search {
             root: pos,
             tree: Tree::new(capacity),
+            params,
         }
     }
 
@@ -55,11 +61,11 @@ impl<G: Game> Search<G> {
                 println!(
                     "Move {} Score {} Visits {}",
                     edge.mov(),
-                    self.tree[edge.ptr()].wins(),
+                    self.tree[edge.ptr()].q(),
                     self.tree[edge.ptr()].visits()
                 );
 
-                (self.tree[edge.ptr()].visits(), edge.mov())
+                (self.tree[edge.ptr()].q(), edge.mov())
             })
             .max_by(|(a, _), (b, _)| a.total_cmp(b))
             .map(|(_, mov)| mov)
@@ -101,7 +107,7 @@ impl<G: Game> Search<G> {
     fn pick_action(&self, index: i32) -> usize {
         let node = &self.tree[index];
 
-        let expl = 1.41 * (node.visits().ln()).sqrt();
+        let expl = self.params.cpuct * node.visits().sqrt();
 
         let mut best = 0;
         let mut max = f32::NEG_INFINITY;
@@ -111,8 +117,8 @@ impl<G: Game> Search<G> {
                 return i;
             }
 
-            let uct = self.tree[action.ptr()].wins() / self.tree[action.ptr()].visits()
-                + expl / self.tree[action.ptr()].visits().sqrt();
+            let u = expl * action.policy() / (1.0 + self.tree[action.ptr()].visits());
+            let uct = self.tree[action.ptr()].q() + u;
 
             if max < uct {
                 best = i;

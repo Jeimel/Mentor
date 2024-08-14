@@ -1,6 +1,6 @@
 use games::connect4::Connect4;
 use mentor::{
-    search::{Search, SearchSettings},
+    search::{MctsParameter, Search, SearchSettings},
     Game, GameState,
 };
 
@@ -11,7 +11,9 @@ fn main() {
         mask: 0,
     };
 
-    let mut search = Search::new(game, 50_000);
+    let params = MctsParameter { cpuct: 1.41 };
+
+    let mut search = Search::new(game, 50_000, params);
     while game.game_state() == GameState::Ongoing {
         let settings = SearchSettings {
             max_time: Some(2500),
