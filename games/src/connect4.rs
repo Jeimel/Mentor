@@ -68,8 +68,8 @@ impl Game for Connect4 {
         }
 
         match pos.game_state() {
-            GameState::Draw => 0.5,
-            _ if side_to_move == pos.side_to_move() => 0.0,
+            GameState::Draw => 0.0,
+            _ if side_to_move == pos.side_to_move() => -1.0,
             _ => 1.0,
         }
     }

@@ -53,11 +53,11 @@ impl<G: Game> Search<G> {
                 println!(
                     "Move {} Score {} Visits {}",
                     edge.mov(),
-                    self.tree[edge.ptr()].q(),
+                    self.tree[edge.ptr()].wins(),
                     self.tree[edge.ptr()].visits()
                 );
 
-                (self.tree[edge.ptr()].q(), edge.mov())
+                (self.tree[edge.ptr()].wins(), edge.mov())
             })
             .max_by(|(a, _), (b, _)| a.total_cmp(b))
             .map(|(_, mov)| mov)
@@ -90,7 +90,7 @@ impl<G: Game> Search<G> {
             self.execute_iteration(edge_ptr, pos)
         };
 
-        let reward = 1.0 - reward;
+        let reward = -reward;
         self.tree.propagate(index, reward);
 
         reward
@@ -125,8 +125,8 @@ impl<G: Game> Search<G> {
         match self.tree[index].game_state() {
             crate::GameState::Ongoing => pos.get_value(),
             crate::GameState::Win => 1.0,
-            crate::GameState::Draw => 0.5,
-            crate::GameState::Loss => 0.0,
+            crate::GameState::Draw => 0.0,
+            crate::GameState::Loss => -1.0,
         }
     }
 }
