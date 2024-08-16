@@ -75,7 +75,7 @@ impl Tree {
         self[index].propagate(reward);
 
         let node = &self[index];
-        self.table.insert(node.hash(), node.visits(), node.wins());
+        self.table.insert(node.hash(), node.visits(), node.value());
     }
 
     pub fn reset<G: Game>(&mut self, pos: &G) {

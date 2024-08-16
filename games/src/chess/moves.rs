@@ -109,7 +109,7 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
 
     const RANK: [Bitboard; 512] = lookup_table!(square, 512, {
         let file = (square as u64) & 7;
-        let occupancy = (square >> 2) & 2 * 63;
+        let occupancy = (square >> 2) & (2 * 63);
 
         let mut attacks = Bitboard(0);
 
@@ -147,7 +147,7 @@ pub fn get_rook_moves(square: Square, occupancy: Bitboard) -> Bitboard {
 
     let square = square as u64;
     let rank_x8 = square & 56;
-    let rank_occ_x2 = (occupancy.0 >> rank_x8) & 2 * 63;
+    let rank_occ_x2 = (occupancy.0 >> rank_x8) & (2 * 63);
     let rank = Bitboard(RANK[(4 * rank_occ_x2 + (square & 7)) as usize].0 << rank_x8);
 
     file | rank

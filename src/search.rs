@@ -21,7 +21,7 @@ impl<G: Game> Search<G> {
         }
     }
 
-    pub fn run(&mut self, pos: Option<G>, setings: SearchSettings) -> G::Move {
+    pub fn run(&mut self, pos: Option<G>, setings: &SearchSettings) -> G::Move {
         let timer = Instant::now();
 
         self.tree.subtree::<G>(&self.root, &pos);
@@ -53,11 +53,11 @@ impl<G: Game> Search<G> {
                 println!(
                     "Move {} Score {} Visits {}",
                     edge.mov(),
-                    self.tree[edge.ptr()].wins(),
+                    self.tree[edge.ptr()].value(),
                     self.tree[edge.ptr()].visits()
                 );
 
-                (self.tree[edge.ptr()].wins(), edge.mov())
+                (self.tree[edge.ptr()].value(), edge.mov())
             })
             .max_by(|(a, _), (b, _)| a.total_cmp(b))
             .map(|(_, mov)| mov)
@@ -99,7 +99,7 @@ impl<G: Game> Search<G> {
     fn pick_action(&self, index: i32) -> usize {
         let node = &self.tree[index];
 
-        let expl = self.params.cpuct(&node) * node.visits().sqrt();
+        let expl = self.params.cpuct(node) * node.visits().sqrt();
 
         let mut best = 0;
         let mut max = f32::NEG_INFINITY;

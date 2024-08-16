@@ -12,11 +12,14 @@ macro_rules! bitboard_loop {
 }
 
 macro_rules! c_enum {
-    ($name:ident { $($key:ident: $type:ty = $value:expr,)+ }) => {
+    ($name:ident { $($(#[$meta:meta])? $key:ident: $type:ty = $value:expr,)+ }) => {
         pub struct $name;
 
         impl $name {
-            $(pub const $key: $type = $value;)+
+            $(
+                $(#[$meta])?
+                pub const $key: $type = $value;
+            )+
         }
     };
 }
@@ -70,7 +73,9 @@ c_enum!(Castle {
         [Bitboard(0b00001110), Bitboard(0b01100000)],
         [Bitboard(0b00001110 << 56), Bitboard(0b01100000 << 56)]
     ],
+    #[allow(dead_code)]
     ROOK_MOVES: [[(usize, usize); 2]; 2] = [[(0, 3), (7, 5)], [(56, 59), (63, 61)]],
+    #[allow(dead_code)]
     MOVES: [u8; 64] = lookup_table!(square, 64, {
         match square {
             0 => 7,

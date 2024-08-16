@@ -13,6 +13,7 @@ impl MctsParameter {
         }
     }
 
+    #[must_use]
     pub fn cpuct(&self, parent: &Node) -> f32 {
         let mut cpuct = self.cpuct_init;
         cpuct += ((parent.visits() + self.cpuct_base + 1.0) / self.cpuct_base).ln();

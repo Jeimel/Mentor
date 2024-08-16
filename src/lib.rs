@@ -22,7 +22,7 @@ pub trait Game: Clone + Copy + Default + Eq {
 
     fn get_value(&mut self) -> f32;
 
-    fn get_policies(&mut self, moves: &Vec<Self::Move>) -> Vec<f32>;
+    fn get_policies(&mut self, moves: &[Self::Move]) -> Vec<f32>;
 
     fn make_move(&mut self, mov: Self::Move);
 

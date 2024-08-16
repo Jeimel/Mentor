@@ -1,7 +1,9 @@
 #[derive(Clone, Copy, Debug)]
 pub struct HashEntry {
     pub hash: u64,
+    #[allow(dead_code)]
     pub visits: f32,
+    #[allow(dead_code)]
     pub wins: f32,
 }
 
@@ -28,6 +30,7 @@ impl HashTable {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get(&self, hash: u64) -> Option<HashEntry> {
         let entry = self.table[(hash as usize) % self.size];
 

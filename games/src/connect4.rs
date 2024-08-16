@@ -74,7 +74,7 @@ impl Game for Connect4 {
         }
     }
 
-    fn get_policies(&mut self, moves: &Vec<Self::Move>) -> Vec<f32> {
+    fn get_policies(&mut self, moves: &[Self::Move]) -> Vec<f32> {
         let mut policies = Vec::with_capacity(moves.len());
 
         for mov in moves {

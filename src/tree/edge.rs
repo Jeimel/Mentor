@@ -1,5 +1,3 @@
-use std::u16;
-
 #[derive(Clone, Debug)]
 pub struct Edge {
     ptr: i32,
@@ -33,6 +31,6 @@ impl Edge {
     }
 
     pub fn set_policy(&mut self, policy: f32) {
-        self.policy = (policy * f32::from(i16::MAX)) as u16
+        self.policy = (policy * f32::from(u16::MAX)) as u16;
     }
 }

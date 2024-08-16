@@ -22,7 +22,7 @@ fn main() {
         };
 
         let mov = match game.side_to_move {
-            false => search.run(Some(game), settings),
+            false => search.run(Some(game), &settings),
             _ => {
                 let mut input_line = String::new();
                 std::io::stdin()

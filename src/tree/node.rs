@@ -7,7 +7,7 @@ pub struct Node {
     state: GameState,
     hash: u64,
     actions: Vec<Edge>,
-    wins: f32,
+    value: f32,
     visits: f32,
 }
 
@@ -18,7 +18,7 @@ impl Node {
             state,
             hash,
             actions: Vec::new(),
-            wins: 0.0,
+            value: 0.0,
             visits: 0.0,
         }
     }
@@ -47,12 +47,12 @@ impl Node {
         self.visits
     }
 
-    pub fn wins(&self) -> f32 {
-        self.wins
+    pub fn value(&self) -> f32 {
+        self.value
     }
 
     pub fn q(&self) -> f32 {
-        self.wins / self.visits
+        self.value / self.visits
     }
 
     pub fn expand<G: Game>(&mut self, pos: &mut G) {
@@ -84,6 +84,6 @@ impl Node {
 
     pub fn propagate(&mut self, reward: f32) {
         self.visits += 1.0;
-        self.wins += reward;
+        self.value += reward;
     }
 }
