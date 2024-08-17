@@ -3,6 +3,8 @@ mod moves;
 mod types;
 mod util;
 
+use core::fmt;
+
 use self::{board::Board, moves::Move};
 use mentor::Game;
 
@@ -40,5 +42,11 @@ impl Game for Chess {
 
     fn get_legal_moves(&self) -> Vec<Self::Move> {
         self.board.gen_moves()
+    }
+}
+
+impl fmt::Display for Chess {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }

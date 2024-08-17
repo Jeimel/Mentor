@@ -11,7 +11,7 @@ pub enum GameState {
     Loss,
 }
 
-pub trait Game: Clone + Copy + Default + Eq {
+pub trait Game: Clone + Copy + Default + Eq + std::fmt::Display {
     type Move: std::fmt::Display + From<u16> + Into<u16> + Copy;
 
     fn side_to_move(&self) -> usize;
