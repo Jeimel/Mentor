@@ -12,14 +12,14 @@ impl Rank {
     #[inline]
     pub const fn bitboard(self) -> Bitboard {
         const RANK: [Bitboard; 8] = [
-            Bitboard(0x00000000000000FF),
-            Bitboard(0x000000000000FF00),
-            Bitboard(0x0000000000FF0000),
-            Bitboard(0x00000000FF000000),
-            Bitboard(0x000000FF00000000),
-            Bitboard(0x0000FF0000000000),
-            Bitboard(0x00FF000000000000),
-            Bitboard(0xFF00000000000000),
+            Bitboard(0x0000_0000_0000_00FF),
+            Bitboard(0x0000_0000_0000_FF00),
+            Bitboard(0x0000_0000_00FF_0000),
+            Bitboard(0x0000_0000_FF00_0000),
+            Bitboard(0x0000_00FF_0000_0000),
+            Bitboard(0x0000_FF00_0000_0000),
+            Bitboard(0x00FF_0000_0000_0000),
+            Bitboard(0xFF00_0000_0000_0000),
         ];
 
         RANK[self as usize]

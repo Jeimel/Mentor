@@ -70,8 +70,8 @@ c_enum!(Castle {
         Castle::BLACK_QUEEN | Castle::BLACK_KING
     ],
     MASK: [[Bitboard; 2]; 2] = [
-        [Bitboard(0b00001110), Bitboard(0b01100000)],
-        [Bitboard(0b00001110 << 56), Bitboard(0b01100000 << 56)]
+        [Bitboard(0b0000_1110), Bitboard(0b0110_0000)],
+        [Bitboard(0b0000_1110 << 56), Bitboard(0b0110_0000 << 56)]
     ],
     #[allow(dead_code)]
     ROOK_MOVES: [[(usize, usize); 2]; 2] = [[(0, 3), (7, 5)], [(56, 59), (63, 61)]],

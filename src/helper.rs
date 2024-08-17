@@ -6,6 +6,7 @@ pub struct MctsParameter {
 }
 
 impl MctsParameter {
+    #[must_use]
     pub fn new(cpuct_init: f32, cpuct_base: f32) -> Self {
         MctsParameter {
             cpuct_init,

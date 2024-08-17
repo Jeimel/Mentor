@@ -48,7 +48,7 @@ impl Tree {
         self.nodes.push(node);
 
         if self.root == -1 {
-            self.set_root(index)
+            self.set_root(index);
         }
 
         index
@@ -67,7 +67,7 @@ impl Tree {
                 return;
             }
 
-            self.set_root(node)
+            self.set_root(node);
         }
     }
 

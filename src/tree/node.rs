@@ -61,9 +61,11 @@ impl Node {
         let moves = pos.get_legal_moves();
         let policies = pos.get_policies(&moves);
 
-        if moves.len() != policies.len() {
-            panic!("Number of moves doesn't match number of policies.")
-        }
+        assert_eq!(
+            moves.len(),
+            policies.len(),
+            "Number of moves doesn't match number of policies."
+        );
 
         for mov in moves {
             self.actions.push(Edge::new(mov.into()));

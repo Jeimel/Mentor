@@ -51,13 +51,14 @@ impl<G: Game> Search<G> {
             .iter()
             .map(|edge| {
                 println!(
-                    "Move {} Score {} Visits {}",
+                    "move {} n {} w {} q {}",
                     edge.mov(),
+                    self.tree[edge.ptr()].visits(),
                     self.tree[edge.ptr()].value(),
-                    self.tree[edge.ptr()].visits()
+                    self.tree[edge.ptr()].q()
                 );
 
-                (self.tree[edge.ptr()].value(), edge.mov())
+                (self.tree[edge.ptr()].visits(), edge.mov())
             })
             .max_by(|(a, _), (b, _)| a.total_cmp(b))
             .map(|(_, mov)| mov)

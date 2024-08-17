@@ -10,7 +10,7 @@ pub struct Vector<const N: usize> {
 
 impl<const N: usize> Vector<N> {
     pub fn activate<T: Activation>(mut self) -> Self {
-        for i in self.inner.iter_mut() {
+        for i in &mut self.inner {
             *i = T::activate(*i);
         }
 
@@ -18,7 +18,7 @@ impl<const N: usize> Vector<N> {
     }
 
     pub fn derive<T: Activation>(mut self) -> Self {
-        for i in self.inner.iter_mut() {
+        for i in &mut self.inner {
             *i = T::derive(*i);
         }
 
@@ -134,7 +134,7 @@ impl<const N: usize> std::ops::Mul<f32> for Vector<N> {
     type Output = Vector<N>;
 
     fn mul(mut self, rhs: f32) -> Self::Output {
-        for i in self.inner.iter_mut() {
+        for i in &mut self.inner {
             *i *= rhs;
         }
 
@@ -144,7 +144,7 @@ impl<const N: usize> std::ops::Mul<f32> for Vector<N> {
 
 impl<const N: usize> std::ops::MulAssign<f32> for Vector<N> {
     fn mul_assign(&mut self, rhs: f32) {
-        for i in self.inner.iter_mut() {
+        for i in &mut self.inner {
             *i *= rhs;
         }
     }

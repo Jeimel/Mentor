@@ -81,7 +81,7 @@ pub mod cost {
             let mut error = 0.0;
 
             for i in 0..N {
-                error += (x[i] - y[i]) * (x[i] - y[i])
+                error += (x[i] - y[i]) * (x[i] - y[i]);
             }
 
             0.5 * error

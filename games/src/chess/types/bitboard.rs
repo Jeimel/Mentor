@@ -18,7 +18,7 @@ impl std::ops::Not for Bitboard {
 impl Bitboard {
     pub const ZERO: Bitboard = Bitboard(0);
 
-    pub const fn trailing_zeros(&self) -> Square {
+    pub const fn trailing_zeros(self) -> Square {
         Square::ALL[self.0.trailing_zeros() as usize]
     }
 

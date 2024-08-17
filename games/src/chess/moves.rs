@@ -16,9 +16,9 @@ impl std::fmt::Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         const PIECES_NAME: [char; 4] = ['n', 'b', 'q', 'k'];
 
-        let mut promo = String::from("");
+        let mut promo = String::new();
         if self.flag & Flag::PROMOTION != 0 {
-            promo.push(PIECES_NAME[(self.flag & 0b11) as usize])
+            promo.push(PIECES_NAME[(self.flag & 0b11) as usize]);
         }
 
         write!(f, "{}{}{}", self.from, self.to, promo)
@@ -60,7 +60,7 @@ pub const fn get_knight_moves(square: Square) -> Bitboard {
         let n = 1 << square;
 
         let h1 = (n >> 1) & !File::H.bitboard().0 | (n << 1) & !File::A.bitboard().0;
-        let h2 = (n >> 2) & 0x3f3f3f3f3f3f3f3f | (n << 2) & 0xfcfcfcfcfcfcfcfc;
+        let h2 = (n >> 2) & 0x3f3f_3f3f_3f3f_3f3f | (n << 2) & 0xfcfc_fcfc_fcfc_fcfc;
 
         Bitboard((h1 << 16) | (h1 >> 16) | (h2 << 8) | (h2 >> 8))
     });
@@ -165,21 +165,21 @@ pub fn get_bishop_moves(square: Square, occupancy: Bitboard) -> Bitboard {
 
     const BISHOP: [BishopMask; 64] = lookup_table!(square, 64, {
         pub const DIAGONALS: [u64; 15] = [
-            0x0100000000000000,
-            0x0201000000000000,
-            0x0402010000000000,
-            0x0804020100000000,
-            0x1008040201000000,
-            0x2010080402010000,
-            0x4020100804020100,
-            0x8040201008040201,
-            0x0080402010080402,
-            0x0000804020100804,
-            0x0000008040201008,
-            0x0000000080402010,
-            0x0000000000804020,
-            0x0000000000008040,
-            0x0000000000000080,
+            0x0100_0000_0000_0000,
+            0x0201_0000_0000_0000,
+            0x0402_0100_0000_0000,
+            0x0804_0201_0000_0000,
+            0x1008_0402_0100_0000,
+            0x2010_0804_0201_0000,
+            0x4020_1008_0402_0100,
+            0x8040_2010_0804_0201,
+            0x0080_4020_1008_0402,
+            0x0000_8040_2010_0804,
+            0x0000_0080_4020_1008,
+            0x0000_0000_8040_2010,
+            0x0000_0000_0080_4020,
+            0x0000_0000_0000_8040,
+            0x0000_0000_0000_0080,
         ];
 
         let n = 1 << square;

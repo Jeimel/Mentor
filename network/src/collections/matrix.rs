@@ -13,7 +13,7 @@ impl<const M: usize, const N: usize> Matrix<M, N> {
                 let mut value = 0.0;
 
                 for j in 0..M {
-                    value += self.inner[j][i] * vec[j]
+                    value += self.inner[j][i] * vec[j];
                 }
 
                 value
@@ -25,6 +25,7 @@ impl<const M: usize, const N: usize> Matrix<M, N> {
         self.inner.iter_mut()
     }
 
+    #[must_use]
     pub fn rand(normal: bool) -> Self {
         Self {
             inner: [Vector::zeroed(); M].map(|_: Vector<N>| Vector::rand(normal)),
@@ -60,7 +61,7 @@ impl<const M: usize, const N: usize> std::ops::Mul<f32> for Matrix<M, N> {
     type Output = Matrix<M, N>;
 
     fn mul(mut self, rhs: f32) -> Self::Output {
-        for i in self.inner.iter_mut() {
+        for i in &mut self.inner {
             *i *= rhs;
         }
 
