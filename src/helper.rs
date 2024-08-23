@@ -1,8 +1,17 @@
 use crate::tree::node::Node;
 
 pub struct MctsParameter {
-    cpuct_init: f32,
-    cpuct_base: f32,
+    pub cpuct_init: f32,
+    pub cpuct_base: f32,
+}
+
+impl Default for MctsParameter {
+    fn default() -> Self {
+        MctsParameter {
+            cpuct_init: 1.41,
+            cpuct_base: 1.0,
+        }
+    }
 }
 
 impl MctsParameter {

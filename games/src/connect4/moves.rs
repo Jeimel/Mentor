@@ -3,7 +3,7 @@ pub struct Move(pub u16);
 
 impl std::fmt::Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.trailing_zeros())
+        write!(f, "{}", self.0)
     }
 }
 

@@ -4,12 +4,24 @@ mod moves;
 use std::fmt::{self};
 
 use board::Board;
-use mentor::{Game, GameState};
+use mentor::{
+    helper::{MctsParameter, SearchSettings},
+    search::Search,
+    Game, GameState,
+};
 use moves::Move;
+
+use crate::UCI;
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct Connect4 {
     board: Board,
+}
+
+impl fmt::Display for Connect4 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.board.print())
+    }
 }
 
 impl Game for Connect4 {
@@ -90,8 +102,27 @@ impl Game for Connect4 {
     }
 }
 
-impl fmt::Display for Connect4 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.board.print())
+pub struct Connect4Interface;
+
+impl UCI for Connect4Interface {
+    type Game = Connect4;
+    const DEFAULT_POS: String = String::new();
+
+    fn options(&mut self) {}
+
+    fn go<G: mentor::Game>(
+        &mut self,
+        pos: &mut G,
+        search: &mut Search<G>,
+        params: &MctsParameter,
+        _: Vec<&str>,
+    ) {
+        let settings = SearchSettings {
+            max_time: Some(2500),
+            max_nodes: usize::MAX,
+        };
+
+        let mov = search.run(Some(*pos), &settings, params);
+        println!("bestmove {}", mov);
     }
 }

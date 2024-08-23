@@ -9,19 +9,22 @@ use crate::{
 pub struct Search<G: Game> {
     root: G,
     tree: Tree,
-    params: MctsParameter,
 }
 
 impl<G: Game> Search<G> {
-    pub fn new(pos: G, capacity: usize, params: MctsParameter) -> Self {
+    pub fn new(pos: G, capacity: usize) -> Self {
         Search {
             root: pos,
             tree: Tree::new(capacity),
-            params,
         }
     }
 
-    pub fn run(&mut self, pos: Option<G>, setings: &SearchSettings) -> G::Move {
+    pub fn run(
+        &mut self,
+        pos: Option<G>,
+        setings: &SearchSettings,
+        params: &MctsParameter,
+    ) -> G::Move {
         let timer = Instant::now();
 
         self.tree.subtree::<G>(&self.root, &pos);
@@ -33,7 +36,7 @@ impl<G: Game> Search<G> {
         loop {
             let mut root = self.root;
 
-            self.execute_iteration(self.tree.root(), &mut root);
+            self.execute_iteration(self.tree.root(), &mut root, params);
 
             nodes += 1;
             if nodes >= setings.max_nodes {
@@ -66,7 +69,7 @@ impl<G: Game> Search<G> {
             .into()
     }
 
-    pub fn execute_iteration(&mut self, index: i32, pos: &mut G) -> f32 {
+    pub fn execute_iteration(&mut self, index: i32, pos: &mut G, params: &MctsParameter) -> f32 {
         let reward = if self.tree[index].visits() == 0.0 || self.tree[index].is_terminal() {
             self.get_utility(index, pos)
         } else {
@@ -74,7 +77,7 @@ impl<G: Game> Search<G> {
                 self.tree[index].expand(pos);
             }
 
-            let action = self.pick_action(index);
+            let action = self.pick_action(index, params);
             let edge = self.tree.edge(index, action);
 
             let mut edge_ptr = edge.ptr();
@@ -88,7 +91,7 @@ impl<G: Game> Search<G> {
                 self.tree.edge_mut(index, action).set_ptr(edge_ptr);
             }
 
-            self.execute_iteration(edge_ptr, pos)
+            self.execute_iteration(edge_ptr, pos, params)
         };
 
         let reward = -reward;
@@ -97,10 +100,10 @@ impl<G: Game> Search<G> {
         reward
     }
 
-    fn pick_action(&self, index: i32) -> usize {
+    fn pick_action(&self, index: i32, params: &MctsParameter) -> usize {
         let node = &self.tree[index];
 
-        let expl = self.params.cpuct(node) * node.visits().sqrt();
+        let expl = params.cpuct(node) * node.visits().sqrt();
 
         let mut best = 0;
         let mut max = f32::NEG_INFINITY;
