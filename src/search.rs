@@ -3,7 +3,7 @@ use std::time::Instant;
 use crate::{
     helper::{MctsParameter, SearchSettings},
     tree::{node::Node, Tree},
-    Game,
+    Game, GameState,
 };
 
 pub struct Search<G: Game> {
@@ -37,6 +37,9 @@ impl<G: Game> Search<G> {
             let mut root = self.root;
 
             self.execute_iteration(self.tree.root(), &mut root, params);
+            if self.tree[self.tree.root()].is_terminal() {
+                break;
+            }
 
             nodes += 1;
             if nodes >= setings.max_nodes {
@@ -53,6 +56,10 @@ impl<G: Game> Search<G> {
             .actions()
             .iter()
             .map(|edge| {
+                if edge.ptr() == -1 {
+                    return (0f32, edge.mov());
+                }
+
                 println!(
                     "move {} n {} w {} q {}",
                     edge.mov(),
@@ -100,7 +107,7 @@ impl<G: Game> Search<G> {
         reward
     }
 
-    fn pick_action(&self, index: i32, params: &MctsParameter) -> usize {
+    fn pick_action(&mut self, index: i32, params: &MctsParameter) -> usize {
         let node = &self.tree[index];
 
         let expl = params.cpuct(node) * node.visits().sqrt();
@@ -108,9 +115,21 @@ impl<G: Game> Search<G> {
         let mut best = 0;
         let mut max = f32::NEG_INFINITY;
 
+        let mut proven_win = true;
+
         for (i, action) in node.actions().iter().enumerate() {
             if action.ptr() == -1 {
                 return i;
+            }
+
+            let state = self.tree[action.ptr()].game_state();
+            if state == GameState::Loss {
+                self.tree[index].set_game_state(GameState::Win);
+                return i;
+            }
+
+            if state != GameState::Win {
+                proven_win = false;
             }
 
             let u = expl * action.policy() / (1.0 + self.tree[action.ptr()].visits());
@@ -122,15 +141,19 @@ impl<G: Game> Search<G> {
             }
         }
 
+        if proven_win {
+            self.tree[index].set_game_state(GameState::Loss);
+        }
+
         best
     }
 
     fn get_utility(&self, index: i32, pos: &mut G) -> f32 {
         match self.tree[index].game_state() {
-            crate::GameState::Ongoing => pos.get_value(),
-            crate::GameState::Win => 1.0,
-            crate::GameState::Draw => 0.0,
-            crate::GameState::Loss => -1.0,
+            GameState::Ongoing => pos.get_value(),
+            GameState::Win => 1.0,
+            GameState::Draw => 0.0,
+            GameState::Loss => -1.0,
         }
     }
 }

@@ -1,6 +1,8 @@
 pub mod chess;
 pub mod connect4;
 
+use mentor::Game;
+
 pub trait UCI {
     type Game: mentor::Game;
     const DEFAULT_POS: String;
@@ -31,12 +33,13 @@ pub trait UCI {
                 "quit" => std::process::exit(0),
                 "position" => self.position(&mut pos, commands),
                 "go" => self.go(&mut pos, &mut search, &params, commands),
+                "display" => println!("{}", pos),
                 _ => {}
             }
         }
     }
 
-    fn position<G: mentor::Game>(&mut self, pos: &mut G, commands: Vec<&str>) {
+    fn position(&mut self, pos: &mut Self::Game, commands: Vec<&str>) {
         let mut moves_start = false;
 
         for command in commands {
@@ -49,7 +52,10 @@ pub trait UCI {
 
             match command {
                 "position" => {}
-                "startpos" => moves_start = true,
+                "startpos" => {
+                    *pos = Self::Game::default();
+                    moves_start = true;
+                }
                 _ => todo!(),
             }
         }
@@ -57,10 +63,10 @@ pub trait UCI {
 
     fn options(&mut self);
 
-    fn go<G: mentor::Game>(
+    fn go(
         &mut self,
-        pos: &mut G,
-        search: &mut mentor::search::Search<G>,
+        pos: &mut Self::Game,
+        search: &mut mentor::search::Search<Self::Game>,
         params: &mentor::helper::MctsParameter,
         commands: Vec<&str>,
     );

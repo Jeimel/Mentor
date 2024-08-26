@@ -31,6 +31,10 @@ impl Node {
         self.state
     }
 
+    pub fn set_game_state(&mut self, state: GameState) {
+        self.state = state;
+    }
+
     pub fn hash(&self) -> u64 {
         self.hash
     }
@@ -67,12 +71,11 @@ impl Node {
             "Number of moves doesn't match number of policies."
         );
 
-        for mov in moves {
-            self.actions.push(Edge::new(mov.into()));
-        }
+        for (mov, policy) in moves.iter().zip(policies) {
+            let mut edge = Edge::new((*mov).into());
+            edge.set_policy(policy);
 
-        for (i, action) in self.actions.iter_mut().enumerate() {
-            action.set_policy(policies[i]);
+            self.actions.push(edge);
         }
     }
 

@@ -71,29 +71,31 @@ impl Board {
         1u64 << (col * (Board::HEIGHT + 1))
     }
 
-    #[allow(dead_code)]
     pub fn print(&self) -> String {
-        let mut grid = [["."; Board::WIDTH]; Board::HEIGHT];
-
-        for col in 0..Board::WIDTH {
-            #[allow(clippy::needless_range_loop)]
-            for row in 0..Board::HEIGHT {
-                let i = row + col * (Board::HEIGHT + 1);
-
-                if ((self.current >> i) & 1) != 0 {
-                    grid[row][col] = "X";
-                }
-
-                if (((self.current ^ self.mask) >> i) & 1) != 0 {
-                    grid[row][col] = "O";
-                }
-            }
-        }
-
         let mut board = String::new();
+
         for row in (0..Board::HEIGHT).rev() {
-            board.push_str(&grid[row].join(""));
-            board.push('\n');
+            let column: String = (0..Board::WIDTH)
+                .map(|col| {
+                    let i = row + col * (Board::HEIGHT + 1);
+
+                    if ((self.current >> i) & 1) != 0 {
+                        return 'X';
+                    }
+
+                    if (((self.current ^ self.mask) >> i) & 1) != 0 {
+                        return 'O';
+                    }
+
+                    '.'
+                })
+                .collect();
+
+            board.push_str(&column);
+
+            if row != 0 {
+                board.push('\n');
+            }
         }
 
         board

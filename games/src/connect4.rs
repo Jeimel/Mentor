@@ -56,17 +56,20 @@ impl Game for Connect4 {
 
         let side_to_move = pos.side_to_move();
 
+        let mut iterations = 0;
         while pos.game_state() == GameState::Ongoing {
             let moves = pos.get_legal_moves();
             let index = (rand::random::<f32>() * moves.len() as f32).floor() as usize;
 
             pos.make_move(moves[index]);
+            iterations += 1;
         }
 
+        let reward = 1.0 - (iterations as f32 / 100.0);
         match pos.game_state() {
             GameState::Draw => 0.0,
-            _ if side_to_move == pos.side_to_move() => -1.0,
-            _ => 1.0,
+            _ if side_to_move == pos.side_to_move() => -reward,
+            _ => reward,
         }
     }
 
@@ -110,10 +113,10 @@ impl UCI for Connect4Interface {
 
     fn options(&mut self) {}
 
-    fn go<G: mentor::Game>(
+    fn go(
         &mut self,
-        pos: &mut G,
-        search: &mut Search<G>,
+        pos: &mut Self::Game,
+        search: &mut Search<Self::Game>,
         params: &MctsParameter,
         _: Vec<&str>,
     ) {
