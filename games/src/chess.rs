@@ -16,6 +16,10 @@ pub struct Chess {
 impl Game for Chess {
     type Move = Move;
 
+    fn from_str(_: &str) -> Self {
+        todo!()
+    }
+
     fn side_to_move(&self) -> usize {
         usize::from(self.board.side_to_move)
     }

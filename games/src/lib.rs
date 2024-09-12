@@ -3,8 +3,29 @@ pub mod connect4;
 
 use mentor::Game;
 
-pub trait UCI {
+fn handle_input<F: FnMut(&str, Vec<&str>)>(mut f: F) {
+    loop {
+        let mut input = String::new();
+        let bytes_read = std::io::stdin().read_line(&mut input).unwrap();
+
+        if bytes_read == 0 {
+            break;
+        }
+
+        let commands = input.split_whitespace().collect::<Vec<_>>();
+        let command = *commands.first().unwrap_or(&"oops");
+
+        f(command, commands);
+    }
+}
+
+pub trait GameProtocol {
     type Game: mentor::Game;
+
+    const NAME: &'static str;
+    const NEW_GAME: &'static str;
+    const NOTATION: &'static str;
+
     const DEFAULT_POS: String;
 
     fn run(&mut self) {
@@ -12,31 +33,37 @@ pub trait UCI {
         let params = mentor::helper::MctsParameter::default();
         let mut search = mentor::search::Search::new(pos, 50_000);
 
-        loop {
-            let mut input = String::new();
-            let bytes_read = std::io::stdin().read_line(&mut input).unwrap();
-
-            if bytes_read == 0 {
-                break;
+        handle_input(|command, commands| match command {
+            "quit" => std::process::exit(0),
+            "setoption" => todo!(),
+            "position" => self.position(&mut pos, commands),
+            "isready" => println!("readyok"),
+            "go" => {
+                self.go(&mut pos, &mut search, &params, commands);
             }
-
-            let commands = input.split_whitespace().collect::<Vec<_>>();
-            let command = *commands.first().unwrap_or(&"oops");
-            match command {
-                "uci" => {
-                    println!("id name mentor");
-                    println!("id author Felix Jablinski");
-                    self.options();
-                }
-                "ucinewgame" => pos = Self::Game::default(),
-                "isready" => println!("readyok"),
-                "quit" => std::process::exit(0),
-                "position" => self.position(&mut pos, commands),
-                "go" => self.go(&mut pos, &mut search, &params, commands),
-                "display" => println!("{}", pos),
-                _ => {}
+            "d" => println!("{}", pos),
+            _ if command == Self::NAME => {
+                println!("id name mentor");
+                println!("id author Felix Jablinski");
+                self.options();
             }
-        }
+            _ if command == Self::NEW_GAME => pos = Self::Game::default(),
+            _ => {}
+        })
+    }
+
+    fn search_input(&mut self, abort: &std::sync::atomic::AtomicBool) {
+        handle_input(|command, _| match command {
+            "quit" => std::process::exit(0),
+            "isready" => println!("readyok"),
+            "stop" => abort.store(true, std::sync::atomic::Ordering::Relaxed),
+            _ if command == Self::NAME => {
+                println!("id name mentor");
+                println!("id author Felix Jablinski");
+                self.options();
+            }
+            _ => {}
+        });
     }
 
     fn position(&mut self, pos: &mut Self::Game, commands: Vec<&str>) {
@@ -56,7 +83,11 @@ pub trait UCI {
                     *pos = Self::Game::default();
                     moves_start = true;
                 }
-                _ => todo!(),
+                _ if command == Self::NOTATION => {}
+                _ => {
+                    *pos = Self::Game::from_str(command);
+                    moves_start = true;
+                }
             }
         }
     }

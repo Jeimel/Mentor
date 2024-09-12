@@ -1,7 +1,10 @@
 mod board;
 mod moves;
 
-use std::fmt::{self};
+use std::{
+    fmt::{self},
+    sync::atomic::AtomicBool,
+};
 
 use board::Board;
 use mentor::{
@@ -11,7 +14,7 @@ use mentor::{
 };
 use moves::Move;
 
-use crate::UCI;
+use crate::GameProtocol;
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct Connect4 {
@@ -26,6 +29,17 @@ impl fmt::Display for Connect4 {
 
 impl Game for Connect4 {
     type Move = Move;
+
+    fn from_str(pos_notation: &str) -> Self {
+        let mut pos = Self::default();
+
+        for mov in pos_notation.chars() {
+            let mov = mov as u16 - '0' as u16;
+            pos.make_move(mov.into());
+        }
+
+        pos
+    }
 
     fn side_to_move(&self) -> usize {
         usize::from(self.board.side_to_move())
@@ -79,7 +93,7 @@ impl Game for Connect4 {
         for mov in moves {
             let policy: f32 = match mov.0 {
                 0 | 6 => 1.0,
-                1 | 5 => 2.0,
+                1 | 5 => 3.0,
                 2 | 4 => 4.0,
                 3 => 7.0,
                 _ => panic!(),
@@ -105,10 +119,15 @@ impl Game for Connect4 {
     }
 }
 
-pub struct Connect4Interface;
+pub struct Connect4Protocol;
 
-impl UCI for Connect4Interface {
+impl GameProtocol for Connect4Protocol {
     type Game = Connect4;
+
+    const NAME: &'static str = "uci";
+    const NEW_GAME: &'static str = "newgame";
+    const NOTATION: &'static str = "columns";
+
     const DEFAULT_POS: String = String::new();
 
     fn options(&mut self) {}
@@ -120,12 +139,22 @@ impl UCI for Connect4Interface {
         params: &MctsParameter,
         _: Vec<&str>,
     ) {
+        let max_nodes = usize::MAX;
+
         let settings = SearchSettings {
-            max_time: Some(2500),
-            max_nodes: usize::MAX,
+            max_time: Some(25_000),
+            max_nodes,
         };
 
-        let mov = search.run(Some(*pos), &settings, params);
-        println!("bestmove {}", mov);
+        let abort = AtomicBool::new(false);
+
+        std::thread::scope(|s| {
+            s.spawn(|| {
+                let mov = search.run(Some(*pos), &settings, params, &abort);
+                println!("bestmove {}", mov);
+            });
+
+            self.search_input(&abort);
+        });
     }
 }

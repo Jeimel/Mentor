@@ -1,4 +1,7 @@
-use std::time::Instant;
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    time::Instant,
+};
 
 use crate::{
     helper::{MctsParameter, SearchSettings},
@@ -24,6 +27,7 @@ impl<G: Game> Search<G> {
         pos: Option<G>,
         setings: &SearchSettings,
         params: &MctsParameter,
+        abort: &AtomicBool,
     ) -> G::Move {
         let timer = Instant::now();
 
@@ -46,6 +50,10 @@ impl<G: Game> Search<G> {
                 break;
             }
 
+            if abort.load(Ordering::Relaxed) {
+                break;
+            }
+
             match setings.max_time {
                 Some(time) if timer.elapsed().as_millis() >= time => break,
                 _ => continue,
@@ -57,7 +65,7 @@ impl<G: Game> Search<G> {
             .iter()
             .map(|edge| {
                 if edge.ptr() == -1 {
-                    return (0f32, edge.mov());
+                    return (-1f32, edge.mov());
                 }
 
                 println!(
