@@ -16,7 +16,7 @@ pub struct Chess {
 impl Game for Chess {
     type Move = Move;
 
-    fn from_str(_: &str) -> Self {
+    fn from_notation(_: &str) -> Self {
         todo!()
     }
 

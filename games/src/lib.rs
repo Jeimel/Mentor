@@ -3,7 +3,7 @@ pub mod connect4;
 
 use mentor::Game;
 
-fn handle_input<F: FnMut(&str, Vec<&str>)>(mut f: F) {
+pub fn handle_input<F: FnMut(&str, Vec<&str>)>(abort: &std::sync::atomic::AtomicBool, mut f: F) {
     loop {
         let mut input = String::new();
         let bytes_read = std::io::stdin().read_line(&mut input).unwrap();
@@ -16,6 +16,10 @@ fn handle_input<F: FnMut(&str, Vec<&str>)>(mut f: F) {
         let command = *commands.first().unwrap_or(&"oops");
 
         f(command, commands);
+
+        if abort.load(std::sync::atomic::Ordering::Relaxed) {
+            break;
+        }
     }
 }
 
@@ -33,27 +37,30 @@ pub trait GameProtocol {
         let params = mentor::helper::MctsParameter::default();
         let mut search = mentor::search::Search::new(pos, 50_000);
 
-        handle_input(|command, commands| match command {
-            "quit" => std::process::exit(0),
-            "setoption" => todo!(),
-            "position" => self.position(&mut pos, commands),
-            "isready" => println!("readyok"),
-            "go" => {
-                self.go(&mut pos, &mut search, &params, commands);
-            }
-            "d" => println!("{}", pos),
-            _ if command == Self::NAME => {
-                println!("id name mentor");
-                println!("id author Felix Jablinski");
-                self.options();
-            }
-            _ if command == Self::NEW_GAME => pos = Self::Game::default(),
-            _ => {}
-        })
+        handle_input(
+            &std::sync::atomic::AtomicBool::new(false),
+            |command, commands| match command {
+                "quit" => std::process::exit(0),
+                "setoption" => todo!(),
+                "position" => self.position(&mut pos, commands),
+                "isready" => println!("readyok"),
+                "go" => {
+                    self.go(&mut pos, &mut search, &params, commands);
+                }
+                "d" => println!("{}", pos),
+                _ if command == Self::NAME => {
+                    println!("id name mentor");
+                    println!("id author Felix Jablinski");
+                    self.options();
+                }
+                _ if command == Self::NEW_GAME => pos = Self::Game::default(),
+                _ => {}
+            },
+        )
     }
 
     fn search_input(&mut self, abort: &std::sync::atomic::AtomicBool) {
-        handle_input(|command, _| match command {
+        handle_input(abort, |command, _| match command {
             "quit" => std::process::exit(0),
             "isready" => println!("readyok"),
             "stop" => abort.store(true, std::sync::atomic::Ordering::Relaxed),
@@ -85,7 +92,7 @@ pub trait GameProtocol {
                 }
                 _ if command == Self::NOTATION => {}
                 _ => {
-                    *pos = Self::Game::from_str(command);
+                    *pos = Self::Game::from_notation(command);
                     moves_start = true;
                 }
             }

@@ -39,13 +39,10 @@ impl Tree {
         self.root
     }
 
-    pub fn set_root(&mut self, root: i32) {
-        self.root = root;
-    }
-
-    pub fn add(&mut self, node: Node) -> i32 {
+    pub fn add(&mut self, state: GameState, hash: u64, parent: i32) -> i32 {
         let index = self.len();
-        self.nodes.push(node);
+
+        self.nodes.push(Node::new(state, hash, parent));
 
         if self.root == -1 {
             self.set_root(index);
@@ -81,7 +78,7 @@ impl Tree {
     pub fn reset<G: Game>(&mut self, pos: &G) {
         self.nodes.clear();
 
-        let node = self.add(Node::new(GameState::Ongoing, pos.hash(), -1));
+        let node = self.add(GameState::Ongoing, pos.hash(), -1);
         self.set_root(node);
     }
 
@@ -99,6 +96,10 @@ impl Tree {
 
     pub fn edge_mut(&mut self, index: i32, edge: usize) -> &mut Edge {
         &mut self[index].actions_mut()[edge]
+    }
+
+    fn set_root(&mut self, root: i32) {
+        self.root = root;
     }
 
     fn find<G: Game>(&self, index: i32, child: &G, board: &G, depth: usize) -> i32 {

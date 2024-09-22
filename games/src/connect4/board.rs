@@ -39,6 +39,42 @@ impl Board {
         self.mask
     }
 
+    pub fn display(&self) -> String {
+        let mut board = String::new();
+
+        for row in (0..Board::HEIGHT).rev() {
+            board.push_str("+---+---+---+---+---+---+---+\n");
+
+            for col in 0..Board::WIDTH {
+                let i = row + col * (Board::HEIGHT + 1);
+
+                let cell = if ((self.current >> i) & 1) != 0 {
+                    if self.side_to_move {
+                        'X'
+                    } else {
+                        'O'
+                    }
+                } else if (((self.current ^ self.mask) >> i) & 1) != 0 {
+                    if self.side_to_move {
+                        '0'
+                    } else {
+                        'X'
+                    }
+                } else {
+                    ' '
+                };
+
+                board.push_str(&format!("| {} ", cell));
+            }
+
+            board.push('|');
+            board.push('\n');
+        }
+
+        board.push_str("+---+---+---+---+---+---+---+");
+        board
+    }
+
     pub fn alignment(pos: u64) -> bool {
         let mut m = pos & (pos >> (Board::HEIGHT + 1));
         if (m & (m >> (2 * (Board::HEIGHT + 1)))) > 0 {
@@ -69,35 +105,5 @@ impl Board {
 
     fn bottom_mask(col: usize) -> u64 {
         1u64 << (col * (Board::HEIGHT + 1))
-    }
-
-    pub fn print(&self) -> String {
-        let mut board = String::new();
-
-        for row in (0..Board::HEIGHT).rev() {
-            let column: String = (0..Board::WIDTH)
-                .map(|col| {
-                    let i = row + col * (Board::HEIGHT + 1);
-
-                    if ((self.current >> i) & 1) != 0 {
-                        return 'X';
-                    }
-
-                    if (((self.current ^ self.mask) >> i) & 1) != 0 {
-                        return 'O';
-                    }
-
-                    '.'
-                })
-                .collect();
-
-            board.push_str(&column);
-
-            if row != 0 {
-                board.push('\n');
-            }
-        }
-
-        board
     }
 }

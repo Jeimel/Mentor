@@ -7,5 +7,5 @@ authors = ["Felix Jablinski"]
 [dependencies]
 
 [workspace]
-members = ["games", "network"]
+members = ["datagen", "games", "network"]
 resolver = "2"

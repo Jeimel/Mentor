@@ -23,17 +23,17 @@ pub struct Connect4 {
 
 impl fmt::Display for Connect4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.board.print())
+        write!(f, "{}", self.board.display())
     }
 }
 
 impl Game for Connect4 {
     type Move = Move;
 
-    fn from_str(pos_notation: &str) -> Self {
+    fn from_notation(notation: &str) -> Self {
         let mut pos = Self::default();
 
-        for mov in pos_notation.chars() {
+        for mov in notation.chars() {
             let mov = mov as u16 - '0' as u16;
             pos.make_move(mov.into());
         }
@@ -150,7 +150,7 @@ impl GameProtocol for Connect4Protocol {
 
         std::thread::scope(|s| {
             s.spawn(|| {
-                let mov = search.run(Some(*pos), &settings, params, &abort);
+                let mov = search.run(Some(*pos), &settings, params, &abort, true);
                 println!("bestmove {}", mov);
             });
 

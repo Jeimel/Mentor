@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
     helper::{MctsParameter, SearchSettings},
-    tree::{node::Node, Tree},
+    tree::Tree,
     Game, GameState,
 };
 
@@ -28,6 +28,7 @@ impl<G: Game> Search<G> {
         setings: &SearchSettings,
         params: &MctsParameter,
         abort: &AtomicBool,
+        uci: bool,
     ) -> G::Move {
         let timer = Instant::now();
 
@@ -68,13 +69,15 @@ impl<G: Game> Search<G> {
                     return (-1f32, edge.mov());
                 }
 
-                println!(
-                    "move {} n {} w {} q {}",
-                    edge.mov(),
-                    self.tree[edge.ptr()].visits(),
-                    self.tree[edge.ptr()].value(),
-                    self.tree[edge.ptr()].q()
-                );
+                if uci {
+                    println!(
+                        "move {} n {} w {} q {}",
+                        edge.mov(),
+                        self.tree[edge.ptr()].visits(),
+                        self.tree[edge.ptr()].value(),
+                        self.tree[edge.ptr()].q()
+                    );
+                }
 
                 (self.tree[edge.ptr()].visits(), edge.mov())
             })
@@ -100,9 +103,7 @@ impl<G: Game> Search<G> {
             pos.make_move(edge.mov().into());
 
             if edge.ptr() == -1 {
-                edge_ptr = self
-                    .tree
-                    .add(Node::new(pos.game_state(), pos.hash(), index));
+                edge_ptr = self.tree.add(pos.game_state(), pos.hash(), index);
                 self.tree.edge_mut(index, action).set_ptr(edge_ptr);
             }
 
