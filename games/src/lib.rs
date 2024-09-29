@@ -34,8 +34,8 @@ pub trait GameProtocol {
 
     fn run(&mut self) {
         let mut pos = Self::Game::default();
-        let params = mentor::helper::MctsParameter::default();
-        let mut search = mentor::search::Search::new(pos, 50_000);
+        let params = mentor::mcts::params::SearchParameter::default();
+        let mut search = mentor::mcts::Search::new(pos, 50_000);
 
         handle_input(
             &std::sync::atomic::AtomicBool::new(false),
@@ -104,8 +104,8 @@ pub trait GameProtocol {
     fn go(
         &mut self,
         pos: &mut Self::Game,
-        search: &mut mentor::search::Search<Self::Game>,
-        params: &mentor::helper::MctsParameter,
+        search: &mut mentor::mcts::Search<Self::Game>,
+        params: &mentor::mcts::params::SearchParameter,
         commands: Vec<&str>,
     );
 }

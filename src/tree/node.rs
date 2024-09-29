@@ -63,7 +63,7 @@ impl Node {
         assert!(self.is_not_expanded());
 
         let moves = pos.get_legal_moves();
-        let policies = pos.get_policies(&moves);
+        let policies = pos.get_policy(&moves);
 
         assert_eq!(
             moves.len(),

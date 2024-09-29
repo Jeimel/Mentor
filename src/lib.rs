@@ -1,5 +1,5 @@
-pub mod helper;
-pub mod search;
+pub mod mcts;
+pub mod network;
 mod tree;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
@@ -24,7 +24,7 @@ pub trait Game: Clone + Copy + Default + Eq + std::fmt::Display {
 
     fn get_value(&mut self) -> f32;
 
-    fn get_policies(&mut self, moves: &[Self::Move]) -> Vec<f32>;
+    fn get_policy(&mut self, moves: &[Self::Move]) -> Vec<f32>;
 
     fn make_move(&mut self, mov: Self::Move);
 

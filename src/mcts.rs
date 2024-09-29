@@ -1,13 +1,15 @@
+pub mod params;
+pub mod settings;
+
+use params::SearchParameter;
+use settings::SearchSettings;
+
 use std::{
     sync::atomic::{AtomicBool, Ordering},
     time::Instant,
 };
 
-use crate::{
-    helper::{MctsParameter, SearchSettings},
-    tree::Tree,
-    Game, GameState,
-};
+use crate::{tree::Tree, Game, GameState};
 
 pub struct Search<G: Game> {
     root: G,
@@ -26,7 +28,7 @@ impl<G: Game> Search<G> {
         &mut self,
         pos: Option<G>,
         setings: &SearchSettings,
-        params: &MctsParameter,
+        params: &SearchParameter,
         abort: &AtomicBool,
         uci: bool,
     ) -> G::Move {
@@ -87,7 +89,7 @@ impl<G: Game> Search<G> {
             .into()
     }
 
-    pub fn execute_iteration(&mut self, index: i32, pos: &mut G, params: &MctsParameter) -> f32 {
+    pub fn execute_iteration(&mut self, index: i32, pos: &mut G, params: &SearchParameter) -> f32 {
         let reward = if self.tree[index].visits() == 0.0 || self.tree[index].is_terminal() {
             self.get_utility(index, pos)
         } else {
@@ -116,7 +118,7 @@ impl<G: Game> Search<G> {
         reward
     }
 
-    fn pick_action(&mut self, index: i32, params: &MctsParameter) -> usize {
+    fn pick_action(&mut self, index: i32, params: &SearchParameter) -> usize {
         let node = &self.tree[index];
 
         let expl = params.cpuct(node) * node.visits().sqrt();

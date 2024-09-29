@@ -1,23 +1,23 @@
 use crate::tree::node::Node;
 
 #[derive(Copy, Clone)]
-pub struct MctsParameter {
+pub struct SearchParameter {
     pub cpuct_init: f32,
     pub cpuct_base: f32,
 }
 
-impl Default for MctsParameter {
+impl Default for SearchParameter {
     fn default() -> Self {
-        MctsParameter {
+        SearchParameter {
             cpuct_init: 1.41,
             cpuct_base: 1.0,
         }
     }
 }
 
-impl MctsParameter {
+impl SearchParameter {
     pub fn new(cpuct_init: f32, cpuct_base: f32) -> Self {
-        MctsParameter {
+        SearchParameter {
             cpuct_init,
             cpuct_base,
         }
@@ -29,10 +29,4 @@ impl MctsParameter {
 
         cpuct
     }
-}
-
-#[derive(Copy, Clone)]
-pub struct SearchSettings {
-    pub max_time: Option<u128>,
-    pub max_nodes: usize,
 }

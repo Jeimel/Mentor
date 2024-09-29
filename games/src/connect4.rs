@@ -1,5 +1,6 @@
 mod board;
 mod moves;
+mod value;
 
 use std::{
     fmt::{self},
@@ -8,8 +9,7 @@ use std::{
 
 use board::Board;
 use mentor::{
-    helper::{MctsParameter, SearchSettings},
-    search::Search,
+    mcts::{params::SearchParameter, settings::SearchSettings, Search},
     Game, GameState,
 };
 use moves::Move;
@@ -87,11 +87,11 @@ impl Game for Connect4 {
         }
     }
 
-    fn get_policies(&mut self, moves: &[Self::Move]) -> Vec<f32> {
-        let mut policies = Vec::with_capacity(moves.len());
+    fn get_policy(&mut self, moves: &[Self::Move]) -> Vec<f32> {
+        let mut policy = Vec::with_capacity(moves.len());
 
         for mov in moves {
-            let policy: f32 = match mov.0 {
+            let value: f32 = match mov.0 {
                 0 | 6 => 1.0,
                 1 | 5 => 3.0,
                 2 | 4 => 4.0,
@@ -99,11 +99,11 @@ impl Game for Connect4 {
                 _ => panic!(),
             };
 
-            policies.push(policy.exp());
+            policy.push(value.exp());
         }
 
-        let sum: f32 = policies.iter().sum();
-        policies.iter().map(|&x| x / sum).collect()
+        let sum: f32 = policy.iter().sum();
+        policy.iter().map(|&x| x / sum).collect()
     }
 
     fn make_move(&mut self, mov: Self::Move) {
@@ -136,7 +136,7 @@ impl GameProtocol for Connect4Protocol {
         &mut self,
         pos: &mut Self::Game,
         search: &mut Search<Self::Game>,
-        params: &MctsParameter,
+        params: &SearchParameter,
         _: Vec<&str>,
     ) {
         let max_nodes = usize::MAX;

@@ -1,9 +1,9 @@
+mod rand;
+mod thread;
+
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use thread::DatagenThread;
-
-mod rand;
-mod thread;
 
 #[derive(Default)]
 struct AtomicStats {
@@ -31,8 +31,8 @@ pub fn run<G: mentor::Game>() {
 
     assert!(threads > 0, "Number of threads must be at least 1.");
 
-    let params = mentor::helper::MctsParameter::default();
-    let settings = mentor::helper::SearchSettings {
+    let params = mentor::mcts::params::SearchParameter::default();
+    let settings = mentor::mcts::settings::SearchSettings {
         max_time: Some(1000),
         max_nodes: usize::MAX,
     };

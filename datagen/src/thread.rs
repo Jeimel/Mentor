@@ -1,22 +1,21 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use mentor::{
-    helper::{MctsParameter, SearchSettings},
-    search::Search,
+    mcts::{params::SearchParameter, settings::SearchSettings, Search},
     Game, GameState,
 };
 
 use crate::{rand::Rand, AtomicStats};
 
 pub struct DatagenThread<G: Game> {
-    params: MctsParameter,
+    params: SearchParameter,
     settings: SearchSettings,
     positions: Vec<(G, f32)>,
     games: usize,
 }
 
 impl<G: Game> DatagenThread<G> {
-    pub fn new(params: MctsParameter, settings: SearchSettings) -> Self {
+    pub fn new(params: SearchParameter, settings: SearchSettings) -> Self {
         DatagenThread {
             params,
             settings,

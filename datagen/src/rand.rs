@@ -46,8 +46,10 @@ impl Rand {
 
 #[cfg(test)]
 mod rand_test {
-    const N: f64 = 1_000_000.0;
-    const C: f64 = 3.841;
+    const N: f32 = 1_000_000.0;
+    const C: f32 = 82.528;
+    const PI: f32 = 0.5;
+    const EXPECTED: f32 = N * PI;
 
     #[test]
     fn assert_random_distribution() {
@@ -62,12 +64,15 @@ mod rand_test {
             }
         }
 
-        let pi = 0.5f64;
+        let sum: f32 = results
+            .iter()
+            .map(|observed| (*observed as f32 - EXPECTED).powf(2.0) / EXPECTED)
+            .sum();
 
-        for n_i in results {
-            let x_square = (n_i as f64 - N * pi).powf(2.0) / N * 2.0;
-
-            assert!(x_square < C)
-        }
+        assert!(
+            sum < C,
+            "Failed chi-square for 64 degrees of freedom at a 5% significance level with a value of {}",
+            sum
+        );
     }
 }
